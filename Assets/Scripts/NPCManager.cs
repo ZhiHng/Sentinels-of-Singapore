@@ -1,33 +1,51 @@
 /*
 * Author: Zhi Hng
-* Date: 24 July 2026
+* Date: 25 July 2026
 * Description: Spawns NPCs.
 */
 
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting;
+using System.Collections;
 
 public class NPCManager : MonoBehaviour
 {
+    [HideInInspector] public static Transform[] targetPoints;
+    [HideInInspector] public static Transform[] eventPoints;
     [SerializeField] int numberOfEnemies;
-    [SerializeField] int numberOfCivilians;
+    [SerializeField] int civiliansSpawnInterval;
+    [SerializeField] int maxCiviliansAtOneTime;
+    int numberOfCivilians;
     [SerializeField] GameObject pickPocketPrefab;
     [SerializeField] GameObject smokerPrefab;
     [SerializeField] GameObject fighterPrefab;
     [SerializeField] GameObject civilianPrefab;
     [SerializeField] int playTime;
-    public List<NPCScript> enemies = new List<NPCScript>();
+    public static List<GameObject> spawnedCivilians = new List<GameObject>();
     float timer = 0f;
     int enemiesToSpawnEachRound;
-    int civiliansToSpawnEachRound;
+    Coroutine spawnEnemyCoroutine;
     void Start()
     {
+        GameObject[] spawnPointObjects = GameObject.FindGameObjectsWithTag("Spawn Point");
+        targetPoints = new Transform[spawnPointObjects.Length];
+        for (int i = 0; i < spawnPointObjects.Length; i++)
+        {
+            targetPoints[i] = spawnPointObjects[i].transform;
+            spawnPointObjects[i].SetActive(false); // Disable the spawn point objects after storing their transforms
+        }
+        GameObject[] eventPointObjects = GameObject.FindGameObjectsWithTag("Event Point");
+        eventPoints = new Transform[eventPointObjects.Length];
+        for (int i = 0; i < eventPointObjects.Length; i++)
+        {
+            eventPoints[i] = eventPointObjects[i].transform;
+            eventPointObjects[i].SetActive(false); // Disable the event point objects after storing their transforms
+        }
         enemiesToSpawnEachRound = numberOfEnemies / playTime;
-        civiliansToSpawnEachRound = numberOfCivilians / playTime;
         int remainderEnemies = numberOfEnemies % playTime;
-        int remainderCivilians = numberOfCivilians % playTime;
-        SpawnEnemies(enemiesToSpawnEachRound + remainderEnemies); // Spawn the remainder of the enemies in the first round
-        SpawnCivilians(civiliansToSpawnEachRound + remainderCivilians); // Spawn the remainder of the civilians in the first round
+        spawnEnemyCoroutine = StartCoroutine(SpawnEnemiesOverTime(enemiesToSpawnEachRound + remainderEnemies, 1f)); // Spawn the remainder of the enemies in the first round
+        StartCoroutine(SpawnCiviliansOverTime(civiliansSpawnInterval)); // Spawn civilians over time
     }
     void Update()
     {
@@ -37,10 +55,12 @@ public class NPCManager : MonoBehaviour
         int seconds = Mathf.FloorToInt(timer);
 
         // Check if it's a multiple of 60 (every minute)
-        if (seconds % 60 == 0 && seconds != 0)
+        if (seconds % 60 == 0 && seconds != 0 && seconds / 60 <= playTime)
         {
-            SpawnEnemies(enemiesToSpawnEachRound);
-            SpawnCivilians(civiliansToSpawnEachRound);
+            if (spawnEnemyCoroutine == null)
+            {
+                spawnEnemyCoroutine = StartCoroutine(SpawnEnemiesOverTime(enemiesToSpawnEachRound, 1f)); // Spawn enemies over time
+            }
         }
     }
     void SpawnEnemies(int numberToSpawn)
@@ -65,7 +85,18 @@ public class NPCManager : MonoBehaviour
 
                 if (enemyPrefab != null)
                 {
-                    GameObject newEnemy = Instantiate(enemyPrefab, new Vector3(Random.Range(-10f, 10f), 0.5f, Random.Range(-10f, 10f)), Quaternion.identity);
+                    GameObject newEnemy;
+                    if (enemyPrefab == fighterPrefab && i != numberToSpawn - 1) // Check if it's a fighter and not the last enemy to spawn
+                    {
+                        // Spawn the fighter at a random event point
+                        newEnemy = Instantiate(enemyPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
+                        i++; // Increment i to account for the extra fighter spawned
+                    }
+                    else if (i == numberToSpawn)
+                    {
+                        enemyPrefab = pickPocketPrefab; // Ensure the last enemy is a PickPocket
+                    }
+                    newEnemy = Instantiate(enemyPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
                 }
             }
     }
@@ -73,7 +104,29 @@ public class NPCManager : MonoBehaviour
     {
         for (int i = 0; i < numberToSpawn; i++)
         {
-            GameObject newCivilian = Instantiate(civilianPrefab, new Vector3(Random.Range(-10f, 10f), 0.5f, Random.Range(-10f, 10f)), Quaternion.identity);
+            GameObject newCivilian = Instantiate(civilianPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
+            spawnedCivilians.Add(newCivilian);
         }
+    }
+    IEnumerator SpawnCiviliansOverTime(float aroundInterval)
+    {
+        while (true)
+        {
+            if (spawnedCivilians.Count < maxCiviliansAtOneTime)
+            {
+                SpawnCivilians(1); // Spawn one civilian at a time
+                numberOfCivilians++;
+            }
+            yield return new WaitForSeconds(Random.Range(Mathf.Max(aroundInterval - 1f, 0f), aroundInterval + 1f)); // Wait for a random interval around the specified time
+        }
+    }
+    IEnumerator SpawnEnemiesOverTime(int numberToSpawn, float aroundInterval)
+    {
+        for (int i = 0; i < numberToSpawn; i++)
+        {
+            SpawnEnemies(1); // Spawn one enemy at a time
+            yield return new WaitForSeconds(Random.Range(aroundInterval - 1f, aroundInterval + 1f)); // Wait for a random interval around the specified time
+        }
+        spawnEnemyCoroutine = null; // Reset the coroutine reference after spawning all enemies
     }
 }

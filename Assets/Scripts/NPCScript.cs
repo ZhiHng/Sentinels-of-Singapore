@@ -1,9 +1,10 @@
 /*
 * Author: Zhi Hng
-* Date: 24 July 2026
+* Date: 25 July 2026
 * Description: Handles the AI for all the NPCs.
 */
 
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,44 +12,59 @@ public class NPCScript : MonoBehaviour
 {
     NavMeshAgent agent;
     [SerializeField] string npcType;
-    Vector3[] targetPositions = new Vector3[] 
-    {   new Vector3(-5f, 0.5f, -5f),
-        new Vector3(5f, 0.5f, -5f),
-        new Vector3(-5f, 0.5f, 5f),
-        new Vector3(5f, 0.5f, 5f)
-    };
     Vector3 currentTargetPosition;
+    Coroutine timerBeforeDestroyCoroutine;
     //PickPocket Variables
+    GameObject targetCivilian;
 
     //Smoker Variables
-    Vector3[] smokerTargetPositions = new Vector3[] 
-    {   new Vector3(-5f, 0.5f, -5f),
-        new Vector3(5f, 0.5f, -5f),
-        new Vector3(-5f, 0.5f, 5f),
-        new Vector3(5f, 0.5f, 5f)
-    };
+
+
     //Fighter Variables
-    Vector3[] fighterTargetPositions = new Vector3[] 
-    {   new Vector3(-5f, 0.5f, -5f),
-        new Vector3(5f, 0.5f, -5f),
-        new Vector3(-5f, 0.5f, 5f),
-        new Vector3(5f, 0.5f, 5f)
-    };
+
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         if (npcType == "Civilian")
         {
-            currentTargetPosition = targetPositions[Random.Range(0, targetPositions.Length)];
+            while (true)
+            {
+                currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
+                if (transform.position != currentTargetPosition)
+                {
+                    break; // Exit the loop if the target position is valid
+                }
+            }
+            MoveToTargetPosition();
+        }
+        else if (npcType == "PickPocket")
+        {
+            targetCivilian = NPCManager.spawnedCivilians[Random.Range(0, NPCManager.spawnedCivilians.Count)];
         }
         else if (npcType == "Smoker")
         {
-            currentTargetPosition = smokerTargetPositions[Random.Range(0, smokerTargetPositions.Length)];
+            while (true)
+            {
+                currentTargetPosition = NPCManager.eventPoints[Random.Range(0, NPCManager.eventPoints.Length)].position;
+                if (transform.position != currentTargetPosition)
+                {
+                    break; // Exit the loop if the target position is valid
+                }
+            }
+            MoveToTargetPosition();
         }
         else if (npcType == "Fighter")
         {
-            currentTargetPosition = fighterTargetPositions[Random.Range(0, fighterTargetPositions.Length)];
+            while (true)
+            {
+                currentTargetPosition = NPCManager.eventPoints[Random.Range(0, NPCManager.eventPoints.Length)].position;
+                if (transform.position != currentTargetPosition)
+                {
+                    break; // Exit the loop if the target position is valid
+                }
+            }
+            MoveToTargetPosition();
         }
         
     }
@@ -56,23 +72,84 @@ public class NPCScript : MonoBehaviour
     {
         if (npcType == "Civilian")
         {
-            // Implement Civilian behavior here
+            // Civilian behavior here
+            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+            {
+                NPCManager.spawnedCivilians.Remove(gameObject); // Remove the civilian from the list of spawned civilians
+                Destroy(gameObject); // Destroy the civilian when it reaches its target position
+            }
         }
-        else if (npcType == "PickPocket")
+        else if (npcType == "Pickpocket")
         {
-            // Implement PickPocket behavior here
+            // PickPocket behavior here
+            if (targetCivilian != null)
+            {
+                currentTargetPosition = targetCivilian.transform.position;
+                MoveToTargetPosition();
+            }
+            else
+            {
+                // If the target civilian is null (destroyed), pick a new target civilian
+                if (NPCManager.spawnedCivilians.Count > 0)
+                {
+                    targetCivilian = NPCManager.spawnedCivilians[Random.Range(0, NPCManager.spawnedCivilians.Count)];
+                    if (timerBeforeDestroyCoroutine != null)
+                    {
+                        StopCoroutine(timerBeforeDestroyCoroutine); // Stop the timer coroutine if it's running
+                        timerBeforeDestroyCoroutine = null; // Reset the coroutine reference
+                    }
+                }
+                else
+                {
+                    if (timerBeforeDestroyCoroutine == null)
+                    {
+                        timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(5));
+                    }
+                }
+            }
         }
         else if (npcType == "Smoker")
         {
-            // Implement Smoker behavior here
+            // Smoker behavior here
+            // Yee Shen code here
+            // Once reaching target position, check if player is far away, if yes, start smoking, if no, variable patience goes down for every second player is nearby.
+            // If patience reaches 0, start smoking anyway. Smoker will turn around periodically and when 'field of view' detects player, starts running away from the player.
+            // Run until far enough from the player for 5 seconds, then delete the smoker. If player interacts with smoker, add score and delete smoker.
+
         }
         else if (npcType == "Fighter")
         {
-            // Implement Fighter behavior here
+            // Fighter behavior here
+            // Joel code here
+            // Once reaching target position. wait until another fighter reaches the same position. Then start fighting with the cloud vfx overlayed.
+            // Every second, variable severity increases.
+            // After 20 sec if player does not interact, delete both fighters. If player interacts, add score. Add more score if severity is lower.
+
         }
     }
     void MoveToTargetPosition()
     {
         agent.SetDestination(currentTargetPosition);
+    }
+
+    IEnumerator TimerBeforeDestroy(int duration)
+    {
+        yield return new WaitForSeconds(duration); // Wait for the specified duration
+        Destroy(gameObject); // Destroy the pickpocket after the timer expires
+    }
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Traffic Light"))
+        {
+            print("Traffic Light Triggered");
+            agent.isStopped = true; // Stop the NPC when it enters the traffic light collider
+        }
+    }
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Traffic Light"))
+        {
+            agent.isStopped = false; // Resume the NPC's movement when it exits the traffic light collider
+        }
     }
 }
