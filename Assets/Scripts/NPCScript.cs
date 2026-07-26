@@ -10,6 +10,7 @@ using UnityEngine.AI;
 
 public class NPCScript : MonoBehaviour
 {
+    GameObject player;
     [HideInInspector] public bool hasCommitedCrime = false;
     [SerializeField] Material crimeMat;
     Material originalMat;
@@ -19,9 +20,13 @@ public class NPCScript : MonoBehaviour
     public int scoreValue;
     Vector3 currentTargetPosition;
     Coroutine timerBeforeDestroyCoroutine;
-    Coroutine walkingVariation;
+    Coroutine walkingVariationCoroutine;
+    Coroutine runFromPlayerCoroutine;
     int pathwayMask;
     int walkableMask;
+    bool hasSeenPlayer = false;
+    bool isRunning;
+    bool isTired = false;
     //PickPocket Variables
     GameObject targetCivilian;
 
@@ -33,6 +38,7 @@ public class NPCScript : MonoBehaviour
 
     void Start()
     {
+        player = GameObject.FindGameObjectWithTag("Player");
         renderer = GetComponent<Renderer>();
         originalMat = renderer.material;
         pathwayMask = 1 << NavMesh.GetAreaFromName("Pathway");
@@ -83,7 +89,7 @@ public class NPCScript : MonoBehaviour
         }
 
         // All npcs have variations in their movement. Can stop coroutine if AI is running.
-        walkingVariation = StartCoroutine(AddWalkingVariation());
+        walkingVariationCoroutine = StartCoroutine(AddWalkingVariation());
     }
     void Update()
     {
@@ -129,7 +135,24 @@ public class NPCScript : MonoBehaviour
             }
             else
             {
-                if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+                if (GetDistanceFromObject(player) < 10 && timerBeforeDestroyCoroutine != null)
+                {
+                    StopCoroutine(timerBeforeDestroyCoroutine);
+                    timerBeforeDestroyCoroutine = null;
+                }
+                if (hasSeenPlayer)
+                {
+                    if (runFromPlayerCoroutine == null)
+                    {
+                        runFromPlayerCoroutine = StartCoroutine(RunFromPlayer());
+                    }
+                }
+                else
+                {
+                    CastVisionCone(5, 60, 10);
+                }
+                // Problem
+                if (Vector3.Distance(transform.position, currentTargetPosition) <= agent.stoppingDistance)
                 {
                     Destroy(gameObject);
                 }
@@ -160,6 +183,43 @@ public class NPCScript : MonoBehaviour
     void MoveToTargetPosition()
     {
         agent.SetDestination(currentTargetPosition);
+    }
+    /// <summary>
+    /// Cast rays in a 2D cone shape
+    /// </summary>
+    /// <param name="rayCount">More rays means more accurate</param>
+    /// <param name="coneAngle">How wide the cone is in degrees</param>
+    /// <param name="visionRange">How far the cone reaches</param>
+    void CastVisionCone(int rayCount, float coneAngle, float visionRange)
+    {
+        for (int i = 0; i < rayCount; i++) // Spread rays across the cone
+        {
+            float angle = Mathf.Lerp(-coneAngle / 2, coneAngle / 2, i / (float)(rayCount - 1)); // Changes angle every loop
+            Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
+
+            if (Physics.Raycast(transform.position, dir, out RaycastHit hit, visionRange))
+            {
+                if (hit.collider.CompareTag("Player Collider"))
+                {
+                    hasSeenPlayer = true;
+                    return;
+                }
+            }
+
+            // Visualize rays in Scene view
+            Debug.DrawRay(transform.position, dir * visionRange, Color.red);
+        }
+    }
+    float GetDistanceFromObject(GameObject targetObject)
+    {
+        // Get positions
+        Vector3 myPosition = transform.position;
+        Vector3 targetPosition = targetObject.transform.position;
+
+        // Calculate distance
+        float distance = Vector3.Distance(myPosition, targetPosition);
+
+        return distance;
     }
     /// <summary>
     /// Deletes gameObject after some seconds. Can start coroutine with timerBeforeDestroyCoroutine and stopping if an event occured.
@@ -198,6 +258,60 @@ public class NPCScript : MonoBehaviour
             yield return new WaitForSeconds(Random.Range(5, 15));
             agent.isStopped = false;
             agent.speed = 3.5f;
+        }
+    }
+    /// <summary>
+    /// Runs away from the player. Gets tired and slow down the longer the run. Stops running when player is 10 units away.
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator RunFromPlayer()
+    {
+        StopCoroutine(walkingVariationCoroutine); // Stop walking like a normal civilian
+        agent.areaMask = walkableMask | pathwayMask;
+        if (!isTired)
+        {
+            isTired = true;
+            agent.speed = 6.5f;
+        }
+        float runDistance = 10f;
+        isRunning = true;
+        StartCoroutine(DecreaseSpeedOverTime(0.25f, 0.05f)); // Gets Tired after running for a while
+        while (isRunning)
+        {
+            if (GetDistanceFromObject(player) > 10)
+            {
+                isRunning = false;
+            }
+            // Direction away from player
+            Vector3 awayDir = (transform.position - player.transform.position).normalized;
+
+            // Pick a point further away
+            Vector3 runTo = transform.position + awayDir * runDistance;
+
+            // Tell agent to go there
+            agent.SetDestination(runTo);
+            yield return new WaitForSeconds(0.25f); // Changes pathway every 0.25 sec
+        }
+        if (timerBeforeDestroyCoroutine == null)
+        {
+            timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(10));
+        }
+        hasSeenPlayer = false;
+        MoveToTargetPosition();
+        runFromPlayerCoroutine = null;
+    }
+    /// <summary>
+    /// Decreases agent speed over time
+    /// </summary>
+    /// <param name="interval">interval in seconds before each decrease</param>
+    /// <param name="step">how much speed to decrease each time</param>
+    /// <returns></returns>
+    IEnumerator DecreaseSpeedOverTime(float interval, float step)
+    {
+        while (agent.speed > 1)
+        {
+            agent.speed = Mathf.Max(agent.speed - step, 1f);
+            yield return new WaitForSeconds(interval);
         }
     }
     void OnTriggerEnter(Collider other)

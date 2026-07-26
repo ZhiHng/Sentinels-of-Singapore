@@ -9,6 +9,7 @@ TagManager:
   - Spawn Point
   - Traffic Light
   - NPC
+  - Player Collider
   layers:
   - Default
   - TransparentFX
