@@ -15,9 +15,10 @@ GameObject:
   - component: {fileID: 1214662500453252686}
   - component: {fileID: -5855703114324165981}
   - component: {fileID: 2038711800564387324}
-  m_Layer: 0
+  - component: {fileID: 8402683192314750854}
+  m_Layer: 6
   m_Name: Pickpocket
-  m_TagString: Untagged
+  m_TagString: NPC
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -106,7 +107,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82caea420820ab547b863512e54fa034, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCScript
+  hasCommitedCrime: 0
+  crimeMat: {fileID: 2100000, guid: 23e89673482587c43b07b42c32a4c839, type: 2}
   npcType: Pickpocket
+  scoreValue: 30
 --- !u!136 &1214662500453252686
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -179,3 +183,26 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!136 &8402683192314750854
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9165486681080740625}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.9593513
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}

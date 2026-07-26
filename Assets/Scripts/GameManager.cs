@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 24 July 2026
+* Date: 26 July 2026
 * Description: Handles management between scenes and player score.
 */
 
@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
     public void AddScore(int scoreToAdd)
     {
         currentScore += scoreToAdd;
+        currentScore = Mathf.Max(0, currentScore);
         scoreText.text = "Score: " + currentScore; // Update the on-screen score display to reflect the new score after collecting an item
     }
 

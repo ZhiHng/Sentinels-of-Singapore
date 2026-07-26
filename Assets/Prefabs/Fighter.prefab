@@ -15,9 +15,9 @@ GameObject:
   - component: {fileID: 934174647296575355}
   - component: {fileID: 6830142867713074916}
   - component: {fileID: 9015615925900416194}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Fighter
-  m_TagString: Untagged
+  m_TagString: NPC
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -106,7 +106,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82caea420820ab547b863512e54fa034, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCScript
+  hasCommitedCrime: 0
+  crimeMat: {fileID: 2100000, guid: 23e89673482587c43b07b42c32a4c839, type: 2}
   npcType: Fighter
+  scoreValue: 10
 --- !u!65 &934174647296575355
 BoxCollider:
   m_ObjectHideFlags: 0

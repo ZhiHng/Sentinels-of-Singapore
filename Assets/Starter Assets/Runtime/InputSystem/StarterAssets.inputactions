@@ -45,7 +45,7 @@
                 {
                     "name": "Interact",
                     "type": "Button",
-                    "id": "a8265d8a-f716-4c3f-8d70-ab2203488bcd",
+                    "id": "3bb05c28-026e-4375-a040-1918bb3e8eba",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -231,7 +231,7 @@
                 },
                 {
                     "name": "",
-                    "id": "10146f6d-b309-4cc1-8237-cd4b97a65a6e",
+                    "id": "1675b8c7-2131-41d7-8a75-4b18c94ee4cd",
                     "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",

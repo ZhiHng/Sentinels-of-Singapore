@@ -8,14 +8,15 @@ TagManager:
   - Event Point
   - Spawn Point
   - Traffic Light
+  - NPC
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Walkable
   - Water
   - UI
-  - 
+  - Interactable
   - 
   - 
   - 

@@ -1,12 +1,11 @@
 /*
 * Author: Zhi Hng
-* Date: 25 July 2026
+* Date: 26 July 2026
 * Description: Spawns NPCs.
 */
 
 using UnityEngine;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using System.Collections;
 
 public class NPCManager : MonoBehaviour
@@ -28,6 +27,7 @@ public class NPCManager : MonoBehaviour
     Coroutine spawnEnemyCoroutine;
     void Start()
     {
+        // Gets all spawn points and event points placed in unity editor allowing for quick modification of points
         GameObject[] spawnPointObjects = GameObject.FindGameObjectsWithTag("Spawn Point");
         targetPoints = new Transform[spawnPointObjects.Length];
         for (int i = 0; i < spawnPointObjects.Length; i++)
@@ -42,6 +42,7 @@ public class NPCManager : MonoBehaviour
             eventPoints[i] = eventPointObjects[i].transform;
             eventPointObjects[i].SetActive(false); // Disable the event point objects after storing their transforms
         }
+
         enemiesToSpawnEachRound = numberOfEnemies / playTime;
         int remainderEnemies = numberOfEnemies % playTime;
         spawnEnemyCoroutine = StartCoroutine(SpawnEnemiesOverTime(enemiesToSpawnEachRound + remainderEnemies, 1f)); // Spawn the remainder of the enemies in the first round
@@ -63,6 +64,10 @@ public class NPCManager : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// Spawns enemies randomly
+    /// </summary>
+    /// <param name="numberToSpawn">Number of enemies to spawn at one time</param>
     void SpawnEnemies(int numberToSpawn)
     {
         for (int i = 0; i < numberToSpawn; i++)
@@ -100,6 +105,10 @@ public class NPCManager : MonoBehaviour
                 }
             }
     }
+    /// <summary>
+    /// Spawns civilians randomly
+    /// </summary>
+    /// <param name="numberToSpawn">Number of civilians to spawn at one time</param>
     void SpawnCivilians(int numberToSpawn)
     {
         for (int i = 0; i < numberToSpawn; i++)
@@ -108,6 +117,11 @@ public class NPCManager : MonoBehaviour
             spawnedCivilians.Add(newCivilian);
         }
     }
+    /// <summary>
+    /// Spawn civilians at a random rate around the interval set. Spawning 1 civilain each time.
+    /// </summary>
+    /// <param name="aroundInterval">Spawn rate will be kept close to the set interval</param>
+    /// <returns></returns>
     IEnumerator SpawnCiviliansOverTime(float aroundInterval)
     {
         while (true)
@@ -120,6 +134,12 @@ public class NPCManager : MonoBehaviour
             yield return new WaitForSeconds(Random.Range(Mathf.Max(aroundInterval - 1f, 0f), aroundInterval + 1f)); // Wait for a random interval around the specified time
         }
     }
+    /// <summary>
+    /// Spawn enemies at a random rate around the interval set. Spawning 1 enemy each time.
+    /// </summary>
+    /// <param name="numberToSpawn"><Number of enemies to spawn in total/param>
+    /// <param name="aroundInterval">Spawn rate will be kept close to the set interval</param>
+    /// <returns></returns>
     IEnumerator SpawnEnemiesOverTime(int numberToSpawn, float aroundInterval)
     {
         for (int i = 0; i < numberToSpawn; i++)

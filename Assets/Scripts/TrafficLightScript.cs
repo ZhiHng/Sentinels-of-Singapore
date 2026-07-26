@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 25 July 2026
+* Date: 26 July 2026
 * Description: Handles the switching of colliders for traffic lights.
 */
 
@@ -18,6 +18,10 @@ public class TrafficLightScript : MonoBehaviour
         collider2.transform.Translate(Vector3.up * 5);
         StartCoroutine(SwitchColliders());
     }
+    /// <summary>
+    /// Alternates between moving colliders up and down to simulate the switching of traffic lights.
+    /// </summary>
+    /// <returns></returns>
     IEnumerator SwitchColliders()
     {
         while (true)
