@@ -3438,7 +3438,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   numberOfEnemies: 10
-  civiliansSpawnInterval: 1
+  civiliansSpawnInterval: 2
   maxCiviliansAtOneTime: 10
   pickPocketPrefab: {fileID: 9165486681080740625, guid: 59a08c2441b2a064d845404656e92507, type: 3}
   smokerPrefab: {fileID: 2823830208621716385, guid: 6e2932ea04082ca4f80336a7bcbeccd2, type: 3}

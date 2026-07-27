@@ -109,6 +109,7 @@ MonoBehaviour:
   hasCommitedCrime: 0
   crimeMat: {fileID: 2100000, guid: 23e89673482587c43b07b42c32a4c839, type: 2}
   npcType: Civilian
+  scoreValue: 0
 --- !u!136 &1097116850944088306
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -141,7 +142,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 2435428079916845078}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5000001
+  m_Radius: 0.6
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50

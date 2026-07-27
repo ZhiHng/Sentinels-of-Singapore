@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 26 July 2026
+* Date: 27 July 2026
 * Description: Spawns NPCs.
 */
 
@@ -71,39 +71,42 @@ public class NPCManager : MonoBehaviour
     void SpawnEnemies(int numberToSpawn)
     {
         for (int i = 0; i < numberToSpawn; i++)
+        {
+            int randomEnemyType = Random.Range(0, 3); // Randomly choose between 0, 1, or 2
+            GameObject enemyPrefab = null;
+
+            switch (randomEnemyType)
             {
-                int randomEnemyType = Random.Range(0, 3); // Randomly choose between 0, 1, or 2
-                GameObject enemyPrefab = null;
-
-                switch (randomEnemyType)
-                {
-                    case 0:
-                        enemyPrefab = pickPocketPrefab;
-                        break;
-                    case 1:
-                        enemyPrefab = smokerPrefab;
-                        break;
-                    case 2:
-                        enemyPrefab = fighterPrefab;
-                        break;
-                }
-
-                if (enemyPrefab != null)
-                {
-                    GameObject newEnemy;
-                    if (enemyPrefab == fighterPrefab && i != numberToSpawn - 1) // Check if it's a fighter and not the last enemy to spawn
-                    {
-                        // Spawn the fighter at a random event point
-                        newEnemy = Instantiate(enemyPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
-                        i++; // Increment i to account for the extra fighter spawned
-                    }
-                    else if (i == numberToSpawn)
-                    {
-                        enemyPrefab = pickPocketPrefab; // Ensure the last enemy is a PickPocket
-                    }
-                    newEnemy = Instantiate(enemyPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
-                }
+                case 0:
+                    enemyPrefab = pickPocketPrefab;
+                    break;
+                case 1:
+                    enemyPrefab = smokerPrefab;
+                    break;
+                case 2:
+                    enemyPrefab = fighterPrefab;
+                    break;
             }
+
+            if (enemyPrefab != null)
+            {
+                Vector3 fightPosition = eventPoints[Random.Range(0, NPCManager.eventPoints.Length)].position;
+                GameObject newEnemy;
+                if (enemyPrefab == fighterPrefab && i <= numberToSpawn - 1) // Check if it's a fighter and not the last enemy to spawn
+                {
+                    // Spawn the fighter at a random event point
+                    newEnemy = Instantiate(enemyPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
+                    newEnemy.GetComponent<NPCScript>().targetFightPosition = fightPosition; // Tells the extra fighter where to go
+                    i++; // Increment i to account for the extra fighter spawned
+                }
+                else if (i == numberToSpawn)
+                {
+                    enemyPrefab = pickPocketPrefab; // Ensure the last enemy is a PickPocket
+                }
+                newEnemy = Instantiate(enemyPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
+                if (enemyPrefab == fighterPrefab) newEnemy.GetComponent<NPCScript>().targetFightPosition = fightPosition; // Tells the fighter where the previous fighter went
+            }
+        }
     }
     /// <summary>
     /// Spawns civilians randomly

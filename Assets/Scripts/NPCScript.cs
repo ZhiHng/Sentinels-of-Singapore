@@ -35,7 +35,7 @@ public class NPCScript : MonoBehaviour
 
 
     //Fighter Variables
-
+    [HideInInspector] public Vector3 targetFightPosition;
 
     void Start()
     {
@@ -78,14 +78,7 @@ public class NPCScript : MonoBehaviour
         }
         else if (npcType == "Fighter")
         {
-            while (true)
-            {
-                currentTargetPosition = NPCManager.eventPoints[Random.Range(0, NPCManager.eventPoints.Length)].position;
-                if (transform.position != currentTargetPosition)
-                {
-                    break; // Exit the loop if the target position is valid
-                }
-            }
+            currentTargetPosition = targetFightPosition;
             MoveToTargetPosition();
         }
 
@@ -249,15 +242,15 @@ public class NPCScript : MonoBehaviour
             agent.isStopped = false;
             agent.speed = Random.Range(3f, 4f);
             yield return new WaitForSeconds(Random.Range(10, 15));
-            switch (Random.Range(1, 10))
+            switch (Random.Range(1, 7))
             {
-                case 1 or 2 or 3 or 4:
+                case 1 or 2:
                     agent.isStopped = true;
                     break;
-                case 5 or 6 or 7 or 8 or 9:
+                case 3 or 4 or 5:
                     agent.speed = Random.Range(1f, 4.5f);
                     break;
-                case 10:
+                case 6:
                     if (npcType == "Civilian") // Small chance to change destination
                     {
                         currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
