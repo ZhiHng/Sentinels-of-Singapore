@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 26 July 2026
+* Date: 27 July 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -14,7 +14,7 @@ public class NPCScript : MonoBehaviour
     [HideInInspector] public bool hasCommitedCrime = false;
     [SerializeField] Material crimeMat;
     Material originalMat;
-    Renderer renderer;
+    Renderer npcRenderer;
     NavMeshAgent agent;
     [SerializeField] string npcType;
     public int scoreValue;
@@ -27,6 +27,7 @@ public class NPCScript : MonoBehaviour
     bool hasSeenPlayer = false;
     bool isRunning;
     bool isTired = false;
+    float distanceBeforeStopRunning = 15;
     //PickPocket Variables
     GameObject targetCivilian;
 
@@ -39,8 +40,8 @@ public class NPCScript : MonoBehaviour
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
-        renderer = GetComponent<Renderer>();
-        originalMat = renderer.material;
+        npcRenderer = GetComponent<Renderer>();
+        originalMat = npcRenderer.material;
         pathwayMask = 1 << NavMesh.GetAreaFromName("Pathway");
         walkableMask = 1 << NavMesh.GetAreaFromName("Walkable");
         agent = GetComponent<NavMeshAgent>();
@@ -135,10 +136,17 @@ public class NPCScript : MonoBehaviour
             }
             else
             {
-                if (GetDistanceFromObject(player) < 10 && timerBeforeDestroyCoroutine != null)
+                if (GetDistanceFromObject(player) < distanceBeforeStopRunning && timerBeforeDestroyCoroutine != null)
                 {
                     StopCoroutine(timerBeforeDestroyCoroutine);
                     timerBeforeDestroyCoroutine = null;
+                }
+                else if (isTired)
+                {
+                    if (timerBeforeDestroyCoroutine == null) // If chased before and timer before destroy coroutine is stopped, will start it again.
+                    {
+                        timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(10));
+                    }
                 }
                 if (hasSeenPlayer)
                 {
@@ -151,8 +159,7 @@ public class NPCScript : MonoBehaviour
                 {
                     CastVisionCone(5, 60, 10);
                 }
-                // Problem
-                if (Vector3.Distance(transform.position, currentTargetPosition) <= agent.stoppingDistance)
+                if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
                 {
                     Destroy(gameObject);
                 }
@@ -239,6 +246,8 @@ public class NPCScript : MonoBehaviour
     {
         while (true)
         {
+            agent.isStopped = false;
+            agent.speed = Random.Range(3f, 4f);
             yield return new WaitForSeconds(Random.Range(10, 15));
             switch (Random.Range(1, 10))
             {
@@ -256,18 +265,18 @@ public class NPCScript : MonoBehaviour
                     break;
             }
             yield return new WaitForSeconds(Random.Range(5, 15));
-            agent.isStopped = false;
-            agent.speed = 3.5f;
+            
         }
     }
     /// <summary>
-    /// Runs away from the player. Gets tired and slow down the longer the run. Stops running when player is 10 units away.
+    /// Runs away from the player. Gets tired and slow down the longer the run. Stops running when player is far enough. Deletes itself if far enough for some time. Returns to target destination once stopped running.
     /// </summary>
     /// <returns></returns>
     IEnumerator RunFromPlayer()
     {
         StopCoroutine(walkingVariationCoroutine); // Stop walking like a normal civilian
         agent.areaMask = walkableMask | pathwayMask;
+        agent.isStopped = false;
         if (!isTired)
         {
             isTired = true;
@@ -275,10 +284,10 @@ public class NPCScript : MonoBehaviour
         }
         float runDistance = 10f;
         isRunning = true;
-        StartCoroutine(DecreaseSpeedOverTime(0.25f, 0.05f)); // Gets Tired after running for a while
+        StartCoroutine(DecreaseSpeedOverTime(0.25f, 0.025f, 4f)); // Gets Tired after running for a while
         while (isRunning)
         {
-            if (GetDistanceFromObject(player) > 10)
+            if (GetDistanceFromObject(player) > distanceBeforeStopRunning)
             {
                 isRunning = false;
             }
@@ -305,28 +314,31 @@ public class NPCScript : MonoBehaviour
     /// </summary>
     /// <param name="interval">interval in seconds before each decrease</param>
     /// <param name="step">how much speed to decrease each time</param>
+    /// <param name="minSpeed">Minimum speed to decrease until</param>
     /// <returns></returns>
-    IEnumerator DecreaseSpeedOverTime(float interval, float step)
+    IEnumerator DecreaseSpeedOverTime(float interval, float step, float minSpeed)
     {
-        while (agent.speed > 1)
+        while (agent.speed > minSpeed)
         {
-            agent.speed = Mathf.Max(agent.speed - step, 1f);
+            agent.speed = Mathf.Max(agent.speed - step, minSpeed);
             yield return new WaitForSeconds(interval);
         }
     }
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Traffic Light"))
+        if (other.CompareTag("Traffic Light") && !isRunning)
         {
             agent.isStopped = true; // Stop the NPC when it enters the traffic light collider
         }
         if (other.name.Contains("Civilian") && gameObject.name.Contains("Pickpocket") && !hasCommitedCrime)
         {
-            renderer.material = crimeMat;
+            npcRenderer.material = crimeMat;
             hasCommitedCrime = true;
             currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
             MoveToTargetPosition();
         }
+        if (walkingVariationCoroutine != null) StopCoroutine(walkingVariationCoroutine);
+        walkingVariationCoroutine = null;
     }
     void OnTriggerExit(Collider other)
     {
@@ -334,5 +346,6 @@ public class NPCScript : MonoBehaviour
         {
             agent.isStopped = false; // Resume the NPC's movement when it exits the traffic light collider
         }
+        walkingVariationCoroutine = StartCoroutine(AddWalkingVariation());
     }
 }
