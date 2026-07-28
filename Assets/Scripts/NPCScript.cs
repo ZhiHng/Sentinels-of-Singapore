@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 27 July 2026
+* Date: 28 July 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -150,6 +150,7 @@ public class NPCScript : MonoBehaviour
                 }
                 else
                 {
+                    // Randomise running away chance
                     CastVisionCone(5, 60, 10);
                 }
                 if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
@@ -299,6 +300,7 @@ public class NPCScript : MonoBehaviour
             timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(10));
         }
         hasSeenPlayer = false;
+        currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
         MoveToTargetPosition();
         runFromPlayerCoroutine = null;
     }
@@ -319,7 +321,7 @@ public class NPCScript : MonoBehaviour
     }
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Traffic Light") && !isRunning)
+        if (other.CompareTag("Traffic Light") && !isTired)
         {
             agent.isStopped = true; // Stop the NPC when it enters the traffic light collider
         }
@@ -335,7 +337,7 @@ public class NPCScript : MonoBehaviour
     }
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Traffic Light"))
+        if (other.CompareTag("Traffic Light") && !isTired)
         {
             agent.isStopped = false; // Resume the NPC's movement when it exits the traffic light collider
         }

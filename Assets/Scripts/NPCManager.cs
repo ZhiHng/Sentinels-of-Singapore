@@ -1,15 +1,17 @@
 /*
 * Author: Zhi Hng
-* Date: 27 July 2026
+* Date: 28 July 2026
 * Description: Spawns NPCs.
 */
 
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine.Experimental.GlobalIllumination;
 
 public class NPCManager : MonoBehaviour
 {
+    [SerializeField] GameObject directionalLight;
     [HideInInspector] public static Transform[] targetPoints;
     [HideInInspector] public static Transform[] eventPoints;
     [SerializeField] int numberOfEnemies;
@@ -27,6 +29,7 @@ public class NPCManager : MonoBehaviour
     Coroutine spawnEnemyCoroutine;
     void Start()
     {
+        directionalLight.transform.rotation = Quaternion.Euler(50f, 0, 0);
         // Gets all spawn points and event points placed in unity editor allowing for quick modification of points
         GameObject[] spawnPointObjects = GameObject.FindGameObjectsWithTag("Spawn Point");
         targetPoints = new Transform[spawnPointObjects.Length];
@@ -50,6 +53,7 @@ public class NPCManager : MonoBehaviour
     }
     void Update()
     {
+        //directionalLight.transform.Rotate(1f, 0, 0);
         timer += Time.deltaTime;
 
         // Convert timer to whole seconds
