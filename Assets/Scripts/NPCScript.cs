@@ -129,6 +129,7 @@ public class NPCScript : MonoBehaviour
             }
             else
             {
+                // remove delete 
                 if (GetDistanceFromObject(player) < distanceBeforeStopRunning && timerBeforeDestroyCoroutine != null)
                 {
                     StopCoroutine(timerBeforeDestroyCoroutine);
