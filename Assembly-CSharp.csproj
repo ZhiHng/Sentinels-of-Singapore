@@ -52,6 +52,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
+    <Compile Include="Assets\Scripts\PlayerCarScript.cs" />
     <Compile Include="Assets\Imported Assets\Ezereal Assets\Ezereal Car Controller\Scripts\EzerealCameraController.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
     <Compile Include="Assets\Imported Assets\Ezereal Assets\Ezereal Car Controller\Scripts\EzerealSuspensionBumpDetector.cs" />

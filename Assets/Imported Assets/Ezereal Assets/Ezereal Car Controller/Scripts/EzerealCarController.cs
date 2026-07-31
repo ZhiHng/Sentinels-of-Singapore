@@ -58,7 +58,7 @@ namespace Ezereal
 
         [Header("Debug Info")]
         public bool stationary = true;
-        [SerializeField] float currentSpeed = 0f;
+        public float currentSpeed = 0f;
         [SerializeField] float currentAccelerationValue = 0f;
         [SerializeField] float currentBrakeValue = 0f;
         [SerializeField] float currentHandbrakeValue = 0f;

@@ -111,6 +111,7 @@ MonoBehaviour:
   crimeMat: {fileID: 2100000, guid: 23e89673482587c43b07b42c32a4c839, type: 2}
   npcType: Pickpocket
   scoreValue: 30
+  targetFightPosition: {x: 0, y: 0, z: 0}
 --- !u!136 &1214662500453252686
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -164,8 +165,8 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9165486681080740625}
   serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
+  m_Mass: 50
+  m_LinearDamping: 5
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}

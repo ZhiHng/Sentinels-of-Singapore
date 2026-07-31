@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 30 July 2026
+* Date: 31 July 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -10,7 +10,9 @@ using UnityEngine.AI;
 
 public class NPCScript : MonoBehaviour
 {
+    GameManager gameManager;
     GameObject player;
+    Rigidbody npcRigidbody;
     [HideInInspector] public bool hasCommitedCrime = false;
     [SerializeField] Material crimeMat;
     Material originalMat;
@@ -40,6 +42,8 @@ public class NPCScript : MonoBehaviour
 
     void Start()
     {
+        npcRigidbody = GetComponent<Rigidbody>();
+        gameManager = FindFirstObjectByType<GameManager>();
         player = GameObject.FindGameObjectWithTag("Player");
         npcRenderer = GetComponent<Renderer>();
         originalMat = npcRenderer.material;
@@ -217,6 +221,7 @@ public class NPCScript : MonoBehaviour
     IEnumerator TimerBeforeDestroy(int duration)
     {
         yield return new WaitForSeconds(duration); // Wait for the specified duration
+        if (npcType == "Civilian") NPCManager.spawnedCivilians.Remove(gameObject); // Remove the civilian from the list of spawned civilians
         Destroy(gameObject); // Destroy the pickpocket after the timer expires
     }
     /// <summary>
@@ -302,13 +307,13 @@ public class NPCScript : MonoBehaviour
         }
         else
         {
-            while (GetDistanceFromObjectVector(player.transform.position) > distanceBeforeStopRunning)
+            while (GetDistanceFromObjectVector(player.transform.position) < distanceBeforeStopRunning)
             {
                 yield return null;
             }
             hasSeenPlayer = false;
+            runFromPlayerCoroutine = null;
         }
-        
     }
     /// <summary>
     /// Decreases agent speed over time
@@ -347,6 +352,24 @@ public class NPCScript : MonoBehaviour
         }
         if (walkingVariationCoroutine != null) StopCoroutine(walkingVariationCoroutine);
         walkingVariationCoroutine = null;
+
+        if (other.gameObject.CompareTag("Player Car"))
+        {
+            if (walkingVariationCoroutine != null) StopCoroutine(walkingVariationCoroutine);
+            walkingVariationCoroutine = null;
+
+            agent.isStopped = true;
+            agent.enabled = false;
+            npcRigidbody.isKinematic = false;
+            npcRigidbody.useGravity = true;
+            Vector3 relativeDirection = (other.transform.position - transform.position).normalized;
+            npcRigidbody.AddForce(relativeDirection * 100f, ForceMode.Impulse);
+            if (timerBeforeDestroyCoroutine == null) 
+            {
+                gameManager.AddScore(-20);
+                timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(5));
+            }
+        }
     }
     void OnTriggerExit(Collider other)
     {
