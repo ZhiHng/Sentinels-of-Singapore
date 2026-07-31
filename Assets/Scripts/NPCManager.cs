@@ -1,17 +1,17 @@
 /*
 * Author: Zhi Hng
-* Date: 28 July 2026
+* Date: 30 July 2026
 * Description: Spawns NPCs.
 */
 
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
-using UnityEngine.Experimental.GlobalIllumination;
 
 public class NPCManager : MonoBehaviour
 {
     [SerializeField] GameObject directionalLight;
+    float degreeToTurnLight;
     [HideInInspector] public static Transform[] targetPoints;
     [HideInInspector] public static Transform[] eventPoints;
     [SerializeField] int numberOfEnemies;
@@ -30,6 +30,7 @@ public class NPCManager : MonoBehaviour
     void Start()
     {
         directionalLight.transform.rotation = Quaternion.Euler(50f, 0, 0);
+        degreeToTurnLight = (180 - 50) / (8 * 60); // (start degree - end degree) / (minutes in seconds)
         // Gets all spawn points and event points placed in unity editor allowing for quick modification of points
         GameObject[] spawnPointObjects = GameObject.FindGameObjectsWithTag("Spawn Point");
         targetPoints = new Transform[spawnPointObjects.Length];
@@ -53,7 +54,7 @@ public class NPCManager : MonoBehaviour
     }
     void Update()
     {
-        //directionalLight.transform.Rotate(1f, 0, 0);
+        directionalLight.transform.Rotate(degreeToTurnLight * Time.deltaTime, 0, 0);
         timer += Time.deltaTime;
 
         // Convert timer to whole seconds

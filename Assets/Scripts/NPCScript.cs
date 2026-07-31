@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 28 July 2026
+* Date: 30 July 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -25,6 +25,7 @@ public class NPCScript : MonoBehaviour
     int pathwayMask;
     int walkableMask;
     bool hasSeenPlayer = false;
+    bool isAttemptingToRun = false;
     bool isRunning;
     bool isTired = false;
     float distanceBeforeStopRunning = 15;
@@ -129,19 +130,6 @@ public class NPCScript : MonoBehaviour
             }
             else
             {
-                // remove delete 
-                if (GetDistanceFromObject(player) < distanceBeforeStopRunning && timerBeforeDestroyCoroutine != null)
-                {
-                    StopCoroutine(timerBeforeDestroyCoroutine);
-                    timerBeforeDestroyCoroutine = null;
-                }
-                else if (isTired)
-                {
-                    if (timerBeforeDestroyCoroutine == null) // If chased before and timer before destroy coroutine is stopped, will start it again.
-                    {
-                        timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(10));
-                    }
-                }
                 if (hasSeenPlayer)
                 {
                     if (runFromPlayerCoroutine == null)
@@ -151,7 +139,6 @@ public class NPCScript : MonoBehaviour
                 }
                 else
                 {
-                    // Randomise running away chance
                     CastVisionCone(5, 60, 10);
                 }
                 if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
@@ -212,11 +199,10 @@ public class NPCScript : MonoBehaviour
             Debug.DrawRay(transform.position, dir * visionRange, Color.red);
         }
     }
-    float GetDistanceFromObject(GameObject targetObject)
+    float GetDistanceFromObjectVector(Vector3 targetPosition)
     {
         // Get positions
         Vector3 myPosition = transform.position;
-        Vector3 targetPosition = targetObject.transform.position;
 
         // Calculate distance
         float distance = Vector3.Distance(myPosition, targetPosition);
@@ -269,41 +255,60 @@ public class NPCScript : MonoBehaviour
     /// <returns></returns>
     IEnumerator RunFromPlayer()
     {
-        StopCoroutine(walkingVariationCoroutine); // Stop walking like a normal civilian
-        agent.areaMask = walkableMask | pathwayMask;
-        agent.isStopped = false;
-        if (!isTired)
+        int run = Random.Range(0,2); // Randomise chance to run when seeing player.
+        switch (run)
         {
-            isTired = true;
-            agent.speed = 6.5f;
+            case 0:
+                isAttemptingToRun = true;
+                break;
+            case 1:
+                isAttemptingToRun = false;
+                break;
         }
-        float runDistance = 10f;
-        isRunning = true;
-        StartCoroutine(DecreaseSpeedOverTime(0.25f, 0.025f, 4f)); // Gets Tired after running for a while
-        while (isRunning)
+        if (isAttemptingToRun)
         {
-            if (GetDistanceFromObject(player) > distanceBeforeStopRunning)
+            StopCoroutine(walkingVariationCoroutine); // Stop walking like a normal civilian
+            agent.areaMask = walkableMask | pathwayMask;
+            agent.isStopped = false;
+
+            if (!isTired)
             {
-                isRunning = false;
+                isTired = true;
+                agent.speed = 6.5f;
             }
-            // Direction away from player
-            Vector3 awayDir = (transform.position - player.transform.position).normalized;
+            float runDistance = 10f;
+            isRunning = true;
+            StartCoroutine(DecreaseSpeedOverTime(0.25f, 0.025f, 4f)); // Gets Tired after running for a while
+            while (isRunning)
+            {
+                if (GetDistanceFromObjectVector(player.transform.position) > distanceBeforeStopRunning)
+                {
+                    isRunning = false;
+                }
+                // Direction away from player
+                Vector3 awayDir = (transform.position - player.transform.position).normalized;
 
-            // Pick a point further away
-            Vector3 runTo = transform.position + awayDir * runDistance;
+                // Pick a point further away
+                Vector3 runTo = transform.position + awayDir * runDistance;
 
-            // Tell agent to go there
-            agent.SetDestination(runTo);
-            yield return new WaitForSeconds(0.25f); // Changes pathway every 0.25 sec
+                // Tell agent to go there
+                agent.SetDestination(runTo);
+                yield return new WaitForSeconds(0.25f); // Changes pathway every 0.25 sec
+            }
+            hasSeenPlayer = false;
+            currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
+            MoveToTargetPosition();
+            runFromPlayerCoroutine = null;
         }
-        if (timerBeforeDestroyCoroutine == null)
+        else
         {
-            timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(10));
+            while (GetDistanceFromObjectVector(player.transform.position) > distanceBeforeStopRunning)
+            {
+                yield return null;
+            }
+            hasSeenPlayer = false;
         }
-        hasSeenPlayer = false;
-        currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
-        MoveToTargetPosition();
-        runFromPlayerCoroutine = null;
+        
     }
     /// <summary>
     /// Decreases agent speed over time
@@ -322,9 +327,16 @@ public class NPCScript : MonoBehaviour
     }
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Traffic Light") && !isTired)
+        if (other.CompareTag("Traffic Light") && !isTired) // !isTired means the NPC is an offender exposed and trying to escape
         {
-            agent.isStopped = true; // Stop the NPC when it enters the traffic light collider
+            if (GetDistanceFromObjectVector(other.bounds.center) < 10) // Runs if is changing traffic light and in the middle of the road.
+            {
+                agent.speed = 5.5f;
+            }
+            else
+            {
+                agent.isStopped = true; // Stop the NPC when it enters the traffic light collider
+            }
         }
         if (other.name.Contains("Civilian") && gameObject.name.Contains("Pickpocket") && !hasCommitedCrime)
         {
