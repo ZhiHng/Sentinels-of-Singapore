@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 1 August 2026
+* Date: 2 August 2026
 * Description: Logic for the NPC cars.
 */
 
@@ -17,7 +17,6 @@ public class NPCCarScript : MonoBehaviour
     bool traversing = false;
     public float gapLength = 8f;   // how far forward the link extends
     public float linkWidth = 8f;   // how wide the link is
-
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -111,19 +110,38 @@ public class NPCCarScript : MonoBehaviour
             activeLink = null;
         }
     }
-    // Code to check if one side is deadend, then turn left or right accordingly
     IEnumerator Turn(int leftOrRight)
     {
         // Decide direction relative to car's current rotation
-        Vector3 offset;
-        if (leftOrRight == 0)
-            offset = -transform.right * 4f;   // left relative to car
-        else
-            offset = transform.right * 4f;    // right relative to car
-
-        // New destination is current position plus offset
+        Vector3 offset = (leftOrRight == 0) ? -transform.right * 4f : transform.right * 4f;
         Vector3 newDest = transform.position + offset;
-        agent.SetDestination(newDest);
+
+        // Check if this side has a valid path
+        NavMeshPath path = new NavMeshPath();
+        bool hasPath = agent.CalculatePath(newDest, path);
+
+        if (hasPath && path.status == NavMeshPathStatus.PathComplete)
+        {
+            // ✅ This side is good → go there
+            agent.SetDestination(newDest);
+        }
+        else
+        {
+            // ❌ Dead end → try the other side
+            offset = (leftOrRight == 0) ? transform.right * 4f : -transform.right * 4f;
+            newDest = transform.position + offset;
+
+            if (agent.CalculatePath(newDest, path) && path.status == NavMeshPathStatus.PathComplete)
+            {
+                agent.SetDestination(newDest);
+            }
+            else
+            {
+                print("Both sides are dead ends!");
+                turnCoroutine = null;
+                yield break;
+            }
+        }
 
         // Wait until agent reaches destination
         while (agent.pathPending || agent.remainingDistance > 0.1f)
