@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 30 July 2026
+* Date: 2 August 2026
 * Description: Spawns NPCs.
 */
 
@@ -29,6 +29,14 @@ public class NPCManager : MonoBehaviour
     Coroutine spawnEnemyCoroutine;
     void Start()
     {
+        if (MainMenuManager.noOfEnemies != 0)
+        {
+            // Use the values from MainMenuManager
+            numberOfEnemies = MainMenuManager.noOfEnemies;
+            civiliansSpawnInterval = MainMenuManager.civilianSpawnInterval;
+            maxCiviliansAtOneTime = MainMenuManager.maxCivilians;
+            playTime = MainMenuManager.playTime;
+        }
         directionalLight.transform.rotation = Quaternion.Euler(50f, 0, 0);
         degreeToTurnLight = (180 - 50) / (8 * 60); // (start degree - end degree) / (minutes in seconds)
         // Gets all spawn points and event points placed in unity editor allowing for quick modification of points
