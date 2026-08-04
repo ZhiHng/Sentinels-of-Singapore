@@ -1,6 +1,6 @@
 /*
-* Author: Zhi Hng
-* Date: 31 July 2026
+* Author: yee Shen
+* Date: 4th August 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -35,7 +35,15 @@ public class NPCScript : MonoBehaviour
     GameObject targetCivilian;
 
     //Smoker Variables
-
+    bool hasStartedSmoking = false;
+    bool isSmoking = false;
+    bool isLookingAround = false;
+    bool hasFinishedSmoking = false;
+    float patience = 10f; // Seconds willing to wait before smoking
+    float playerScareDistance = 30f;
+    Coroutine smokingCoroutine;
+    Coroutine lookAroundCoroutine;
+    Coroutine patienceCoroutine;
 
     //Fighter Variables
     [HideInInspector] public Vector3 targetFightPosition;
@@ -65,7 +73,7 @@ public class NPCScript : MonoBehaviour
             }
             MoveToTargetPosition();
         }
-        else if (npcType == "PickPocket")
+        else if (npcType == "Pickpocket")
         {
             targetCivilian = NPCManager.spawnedCivilians[Random.Range(0, NPCManager.spawnedCivilians.Count)];
         }
@@ -153,12 +161,51 @@ public class NPCScript : MonoBehaviour
         }
         else if (npcType == "Smoker")
         {
-            // Smoker behavior here
-            // Yee Shen code here
-            // Once reaching target position, check if player is far away, if yes, start smoking, if no, variable patience goes down for every second player is nearby.
-            // If patience reaches 0, start smoking anyway. Smoker will turn around periodically and when 'field of view' detects player, starts running away from the player.
-            // Run until far enough from the player for 5 seconds, then delete the smoker. If player interacts with smoker, add score and delete smoker.
+            // Reached smoking location
+            if (hasFinishedSmoking &&
+                !agent.pathPending &&
+                agent.remainingDistance <= agent.stoppingDistance)
+            {
+                Destroy(gameObject);
+            }
+            if (!hasStartedSmoking &&
+                agent.hasPath &&
+                agent.remainingDistance <= agent.stoppingDistance &&
+                !agent.pathPending)
+            {
+                hasStartedSmoking = true;
+                agent.isStopped = true;
 
+                float distance = GetDistanceFromObjectVector(player.transform.position);
+
+                // Player is far enough away
+                if (distance > playerScareDistance)
+                {
+                    StartSmoking();
+                }
+                else
+                {
+                    // Player is nearby
+                    if (patienceCoroutine == null)
+                        patienceCoroutine = StartCoroutine(WaitForPlayerToLeave());
+                }
+            }
+
+            // While smoking, keep checking vision
+            if (hasCommitedCrime)
+            {
+                CastVisionCone(5, 80, 12);
+            }
+
+            // Player spotted
+            if (hasSeenPlayer)
+            {
+                if (runFromPlayerCoroutine == null)
+                {
+                    StopSmoking();
+                    runFromPlayerCoroutine = StartCoroutine(RunFromPlayer());
+                }
+            }
         }
         else if (npcType == "Fighter")
         {
@@ -363,7 +410,7 @@ public class NPCScript : MonoBehaviour
             npcRigidbody.isKinematic = false;
             npcRigidbody.useGravity = true;
             Vector3 relativeDirection = (other.transform.position - transform.position).normalized;
-            npcRigidbody.AddForce(relativeDirection * 100f, ForceMode.Impulse);
+            npcRigidbody.AddForce(relativeDirection * 150f, ForceMode.Impulse);
             if (timerBeforeDestroyCoroutine == null) 
             {
                 gameManager.AddScore(-20);
@@ -378,5 +425,81 @@ public class NPCScript : MonoBehaviour
             agent.isStopped = false; // Resume the NPC's movement when it exits the traffic light collider
         }
         walkingVariationCoroutine = StartCoroutine(AddWalkingVariation());
+    }
+    IEnumerator WaitForPlayerToLeave()
+    {
+        while (!isSmoking)
+        {
+            float distance = GetDistanceFromObjectVector(player.transform.position);
+
+            if (distance > playerScareDistance)
+            {
+                StartSmoking();
+                break;
+            }
+
+            patience -= Time.deltaTime;
+
+            if (patience <= 0)
+            {
+                StartSmoking();
+                break;
+            }
+
+            yield return null;
+        }
+
+        patienceCoroutine = null;
+    }
+
+    IEnumerator LookAround()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(Random.Range(3f, 5f));
+
+            float angle = Random.Range(-90f, 90f);
+            transform.Rotate(0, angle, 0);
+
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    IEnumerator Smoke()
+    {
+        yield return new WaitForSeconds(10f);
+
+        StopSmoking();
+
+        hasFinishedSmoking = true;
+
+        currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
+        agent.isStopped = false;
+        MoveToTargetPosition();
+    }
+
+    void StartSmoking()
+    {
+        print("SMOKE NOW");
+        if (isSmoking) return;
+
+        isSmoking = true;
+
+        npcRenderer.material = crimeMat;
+        hasCommitedCrime = true;
+
+        smokingCoroutine = StartCoroutine(Smoke());
+        lookAroundCoroutine = StartCoroutine(LookAround());
+    }
+
+    void StopSmoking()
+    {
+        print("STOP SMOKE");
+        isSmoking = false;
+
+        if (lookAroundCoroutine != null)
+            StopCoroutine(lookAroundCoroutine);
+
+        smokingCoroutine = null;
     }
 }
