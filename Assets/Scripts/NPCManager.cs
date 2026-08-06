@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 2 August 2026
+* Date: 6 August 2026
 * Description: Spawns NPCs.
 */
 
@@ -27,6 +27,9 @@ public class NPCManager : MonoBehaviour
     float timer = 0f;
     int enemiesToSpawnEachRound;
     Coroutine spawnEnemyCoroutine;
+    int level = 1; // Current level of the game, starting from level 1
+    int graphicQuality = 0;
+    int difficulty = 0;
     void Start()
     {
         if (MainMenuManager.noOfEnemies != 0)
@@ -36,6 +39,10 @@ public class NPCManager : MonoBehaviour
             civiliansSpawnInterval = MainMenuManager.civilianSpawnInterval;
             maxCiviliansAtOneTime = MainMenuManager.maxCivilians;
             playTime = MainMenuManager.playTime;
+            level = MainMenuManager.level;
+            graphicQuality = MainMenuManager.graphicQuality;
+            difficulty = MainMenuManager.difficulty;
+            print("Level:" + level + " Graphic Quality:" + graphicQuality + " Difficulty:" + difficulty);
         }
         directionalLight.transform.rotation = Quaternion.Euler(50f, 0, 0);
         degreeToTurnLight = (180 - 50) / (8 * 60); // (start degree - end degree) / (minutes in seconds)
