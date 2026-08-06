@@ -1,6 +1,6 @@
 /*
-* Author: yee Shen
-* Date: 4th August 2026
+* Author: joel
+* Date: 6th August 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -45,8 +45,49 @@ public class NPCScript : MonoBehaviour
     Coroutine lookAroundCoroutine;
     Coroutine patienceCoroutine;
 
-    //Fighter Variables
-    [HideInInspector] public Vector3 targetFightPosition;
+// Fighter Variables
+[Header("Fighter Settings")]
+
+[HideInInspector]
+public Vector3 targetFightPosition;
+
+[SerializeField]
+GameObject fightCloudVFXPrefab;
+
+[SerializeField]
+Vector3 fightCloudOffset = new Vector3(0f, 1.5f, 0f);
+
+[SerializeField]
+float matchingTargetDistance = 1f;
+
+[SerializeField]
+float fightDuration = 10f;
+
+[SerializeField]
+int maximumFightSeverity = 20;
+
+[SerializeField]
+int scoreLostPerSeverity = 4;
+
+[SerializeField]
+int minimumFightScore = 10;
+
+bool hasReachedFightPosition = false;
+bool hasStartedFighting = false;
+bool fightResolved = false;
+
+int fightSeverity = 0;
+
+NPCScript pairedFighter;
+NPCScript fightController;
+
+GameObject spawnedFightCloud;
+
+Coroutine fightCoroutine;
+
+static readonly List<NPCScript> waitingFighters =
+    new List<NPCScript>();
+
 
     void Start()
     {
@@ -209,6 +250,14 @@ public class NPCScript : MonoBehaviour
         }
         else if (npcType == "Fighter")
         {
+            // Check if the fighter has reached the fight position
+            if (!hasReachedFightPosition &&
+                !agent.pathPending &&
+                agent.remainingDistance != Mathf.Infinity &&
+                agent.remainingDistance <= agent.stoppingDistance)
+            {
+                ReachFightPosition();
+            }
             // Fighter behavior here
             // Joel code here
             // Once reaching target position. wait until another fighter reaches the same position. Then start fighting with the cloud vfx overlayed.
@@ -279,6 +328,10 @@ public class NPCScript : MonoBehaviour
     {
         while (true)
         {
+            if (npcType == "Fighter" && hasReachedFightPosition)
+            {
+            yield break;
+            }
             agent.isStopped = false;
             agent.speed = Random.Range(3f, 4f);
             yield return new WaitForSeconds(Random.Range(10, 15));
@@ -502,4 +555,379 @@ public class NPCScript : MonoBehaviour
 
         smokingCoroutine = null;
     }
+
+/// <summary>
+/// Called when a fighter reaches the fight location.
+/// </summary>
+void ReachFightPosition()
+{
+    hasReachedFightPosition = true;
+
+    if (agent != null &&
+        agent.enabled &&
+        agent.isOnNavMesh)
+    {
+        agent.isStopped = true;
+    }
+
+    if (walkingVariationCoroutine != null)
+    {
+        StopCoroutine(walkingVariationCoroutine);
+        walkingVariationCoroutine = null;
+    }
+
+    FindFighterPartner();
+}
+
+/// <summary>
+/// Searches for another fighter waiting at the same fight location.
+/// </summary>
+void FindFighterPartner()
+{
+    // Remove fighters that have already been destroyed or resolved.
+    waitingFighters.RemoveAll(
+        fighter => fighter == null || fighter.fightResolved
+    );
+
+    for (int i = 0; i < waitingFighters.Count; i++)
+    {
+        NPCScript otherFighter = waitingFighters[i];
+
+        if (otherFighter == this)
+        {
+            continue;
+        }
+
+        if (otherFighter.npcType != "Fighter")
+        {
+            continue;
+        }
+
+        if (!otherFighter.hasReachedFightPosition ||
+            otherFighter.hasStartedFighting ||
+            otherFighter.pairedFighter != null)
+        {
+            continue;
+        }
+
+        // Check whether both fighters were assigned
+        // approximately the same fight position.
+        float targetDistance = Vector3.Distance(
+            targetFightPosition,
+            otherFighter.targetFightPosition
+        );
+
+        if (targetDistance <= matchingTargetDistance)
+        {
+            PairWithFighter(otherFighter);
+            return;
+        }
+    }
+
+    // No partner found, so this fighter waits in the list.
+    if (!waitingFighters.Contains(this))
+    {
+        waitingFighters.Add(this);
+    }
+}
+
+/// <summary>
+/// Connects two fighters together.
+/// </summary>
+void PairWithFighter(NPCScript otherFighter)
+{
+    if (otherFighter == null ||
+        fightResolved ||
+        otherFighter.fightResolved)
+    {
+        return;
+    }
+
+    pairedFighter = otherFighter;
+    otherFighter.pairedFighter = this;
+
+    // This fighter controls the timer, score and VFX.
+    fightController = this;
+    otherFighter.fightController = this;
+
+    waitingFighters.Remove(this);
+    waitingFighters.Remove(otherFighter);
+
+    StartFight();
+}
+
+/// <summary>
+/// Starts the fight between the two fighters.
+/// </summary>
+void StartFight()
+{
+    if (hasStartedFighting ||
+        pairedFighter == null ||
+        fightResolved)
+    {
+        return;
+    }
+
+    hasStartedFighting = true;
+    pairedFighter.hasStartedFighting = true;
+
+    hasCommitedCrime = true;
+    pairedFighter.hasCommitedCrime = true;
+
+    fightSeverity = 0;
+    pairedFighter.fightSeverity = 0;
+
+    if (agent != null &&
+        agent.enabled &&
+        agent.isOnNavMesh)
+    {
+        agent.isStopped = true;
+    }
+
+    if (pairedFighter.agent != null &&
+        pairedFighter.agent.enabled &&
+        pairedFighter.agent.isOnNavMesh)
+    {
+        pairedFighter.agent.isStopped = true;
+    }
+
+    // Change both fighters to the crime material.
+    if (npcRenderer != null && crimeMat != null)
+    {
+        npcRenderer.material = crimeMat;
+    }
+
+    if (pairedFighter.npcRenderer != null &&
+        pairedFighter.crimeMat != null)
+    {
+        pairedFighter.npcRenderer.material =
+            pairedFighter.crimeMat;
+    }
+
+    MakeFightersFaceEachOther();
+    SpawnFightCloud();
+
+    fightCoroutine = StartCoroutine(FightTimer());
+}
+
+/// <summary>
+/// Rotates the fighters so they face one another.
+/// </summary>
+void MakeFightersFaceEachOther()
+{
+    if (pairedFighter == null)
+    {
+        return;
+    }
+
+    Vector3 otherPosition = pairedFighter.transform.position;
+    otherPosition.y = transform.position.y;
+
+    Vector3 myPosition = transform.position;
+    myPosition.y = pairedFighter.transform.position.y;
+
+    transform.LookAt(otherPosition);
+    pairedFighter.transform.LookAt(myPosition);
+}
+
+/// <summary>
+/// Creates the cloud VFX between both fighters.
+/// </summary>
+void SpawnFightCloud()
+{
+    if (pairedFighter == null)
+    {
+        return;
+    }
+
+    GameObject selectedVFX = fightCloudVFXPrefab;
+
+    // Use the other fighter's prefab if this one has none.
+    if (selectedVFX == null)
+    {
+        selectedVFX = pairedFighter.fightCloudVFXPrefab;
+    }
+
+    if (selectedVFX == null)
+    {
+        Debug.LogWarning(
+            "No fight cloud VFX prefab was assigned."
+        );
+
+        return;
+    }
+
+    Vector3 middlePosition =
+        (transform.position +
+         pairedFighter.transform.position) / 2f;
+
+    middlePosition += fightCloudOffset;
+
+    spawnedFightCloud = Instantiate(
+        selectedVFX,
+        middlePosition,
+        Quaternion.identity
+    );
+}
+
+/// <summary>
+/// Raises the severity once every second.
+/// Ends the fight automatically after the duration.
+/// </summary>
+IEnumerator FightTimer()
+{
+    float elapsedTime = 0f;
+    print ("FIGHT STARTED");
+    while (elapsedTime < fightDuration &&
+           !fightResolved)
+    {
+        yield return new WaitForSeconds(1f);
+
+        if (fightResolved)
+        {
+            yield break;
+        }
+
+        elapsedTime += 1f;
+
+        fightSeverity = Mathf.Clamp(
+            fightSeverity + 1,
+            0,
+            maximumFightSeverity
+        );
+
+        if (pairedFighter != null)
+        {
+            pairedFighter.fightSeverity =
+                fightSeverity;
+        }
+
+        Debug.Log(
+            "Fight severity: " + fightSeverity
+        );
+    }
+
+    if (!fightResolved)
+    {
+        ResolveFight(false);
+    }
+}
+
+/// <summary>
+/// Call this when the player interacts with either fighter.
+/// </summary>
+public void Interact()
+{
+    if (npcType != "Fighter")
+    {
+        return;
+    }
+
+    if (!hasStartedFighting ||
+        fightResolved)
+    {
+        return;
+    }
+
+    // Send the interaction to the fighter controlling the event.
+    if (fightController != null &&
+        fightController != this)
+    {
+        fightController.ResolveFight(true);
+    }
+    else
+    {
+        ResolveFight(true);
+    }
+}
+
+/// <summary>
+/// Ends the fight and destroys both fighters.
+/// </summary>
+void ResolveFight(bool playerInteracted)
+{
+    if (fightResolved)
+    {
+        return;
+    }
+
+    fightResolved = true;
+
+    NPCScript fighterToDestroy = pairedFighter;
+
+    if (fighterToDestroy != null)
+    {
+        fighterToDestroy.fightResolved = true;
+    }
+
+    if (fightCoroutine != null)
+    {
+        StopCoroutine(fightCoroutine);
+        fightCoroutine = null;
+    }
+
+    if (playerInteracted)
+    {
+        // A lower severity gives the player more score.
+        int earnedScore = Mathf.Max(
+            minimumFightScore,
+            scoreValue -
+            fightSeverity * scoreLostPerSeverity
+        );
+
+        if (gameManager != null)
+        {
+            gameManager.AddScore(earnedScore);
+        }
+
+        Debug.Log(
+            "Player stopped the fight at severity " +
+            fightSeverity +
+            " and earned " +
+            earnedScore +
+            " points."
+        );
+    }
+    else
+    {
+        Debug.Log(
+            "The fight ended after " +
+            fightDuration +
+            " seconds without player interaction."
+        );
+    }
+
+    if (spawnedFightCloud != null)
+    {
+        Destroy(spawnedFightCloud);
+        spawnedFightCloud = null;
+    }
+
+    waitingFighters.Remove(this);
+    waitingFighters.Remove(fighterToDestroy);
+
+    pairedFighter = null;
+
+    if (fighterToDestroy != null)
+    {
+        fighterToDestroy.pairedFighter = null;
+        Destroy(fighterToDestroy.gameObject);
+    }
+
+    Destroy(gameObject);
+}
+
+/// <summary>
+/// Cleans up the waiting list and VFX if a fighter is destroyed.
+/// </summary>
+void OnDestroy()
+{
+    waitingFighters.Remove(this);
+
+    if (fightController == this &&
+        spawnedFightCloud != null)
+    {
+        Destroy(spawnedFightCloud);
+    }
+}
 }
