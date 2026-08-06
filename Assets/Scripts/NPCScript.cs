@@ -5,6 +5,7 @@
 */
 
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -45,48 +46,47 @@ public class NPCScript : MonoBehaviour
     Coroutine lookAroundCoroutine;
     Coroutine patienceCoroutine;
 
-// Fighter Variables
-[Header("Fighter Settings")]
+    // Fighter Variables
+    [Header("Fighter Settings")]
 
-[HideInInspector]
-public Vector3 targetFightPosition;
+    [HideInInspector]
+    public Vector3 targetFightPosition;
 
-[SerializeField]
-GameObject fightCloudVFXPrefab;
+    [SerializeField]
+    GameObject fightCloudVFXPrefab;
 
-[SerializeField]
-Vector3 fightCloudOffset = new Vector3(0f, 1.5f, 0f);
+    [SerializeField]
+    Vector3 fightCloudOffset = new Vector3(0f, 1.5f, 0f);
 
-[SerializeField]
-float matchingTargetDistance = 1f;
+    [SerializeField]
+    float matchingTargetDistance = 1f;
 
-[SerializeField]
-float fightDuration = 10f;
+    [SerializeField]
+    float fightDuration = 10f;
 
-[SerializeField]
-int maximumFightSeverity = 20;
+    [SerializeField]
+    int maximumFightSeverity = 20;
 
-[SerializeField]
-int scoreLostPerSeverity = 4;
+    [SerializeField]
+    int scoreLostPerSeverity = 4;
 
-[SerializeField]
-int minimumFightScore = 10;
+    [SerializeField]
+    int minimumFightScore = 10;
 
-bool hasReachedFightPosition = false;
-bool hasStartedFighting = false;
-bool fightResolved = false;
+    bool hasReachedFightPosition = false;
+    bool hasStartedFighting = false;
+    bool fightResolved = false;
 
-int fightSeverity = 0;
+    int fightSeverity = 0;
 
-NPCScript pairedFighter;
-NPCScript fightController;
+    NPCScript pairedFighter;
+    NPCScript fightController;
 
-GameObject spawnedFightCloud;
+    GameObject spawnedFightCloud;
 
-Coroutine fightCoroutine;
+    Coroutine fightCoroutine;
 
-static readonly List<NPCScript> waitingFighters =
-    new List<NPCScript>();
+    static readonly List<NPCScript> waitingFighters = new List<NPCScript>();
 
 
     void Start()

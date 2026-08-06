@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 5 August 2026
+* Date: 6 August 2026
 * Description: Manages the main menu scene and calls level scenes for gameplay.
 */
 
@@ -10,6 +10,7 @@ using UnityEngine;
 public class MainMenuManager : MonoBehaviour
 {
     Animator animator;
+    [SerializeField] GameObject screenDarken;
     [SerializeField] GameObject mainMenu;
     [SerializeField] GameObject settingsMenu;
     [SerializeField] GameObject howToPlayMenu;
@@ -26,6 +27,7 @@ public class MainMenuManager : MonoBehaviour
     public static int difficulty = 0;
     public int markerTarget = 0;
     public int menuPage = 0; // 0 = main menu, 1 = settings, 2 = how to play, 3 = credits, 4 = level select
+    public int howToPlayPage = 0; // 0 = page 1, 1 = page 2, 2 = page 3
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -34,6 +36,7 @@ public class MainMenuManager : MonoBehaviour
         howToPlayMenu.SetActive(false); // 2 Menu
         creditsMenu.SetActive(false); // 3 Menu
         levelMenu.SetActive(false); // 4 Menu
+        screenDarken.SetActive(false);
     }
     void OnUp()
     {
@@ -132,6 +135,8 @@ public class MainMenuManager : MonoBehaviour
                         OpenMenu(howToPlayMenu);
                         menuPage = 2;
                         markerTarget = 0;
+                        howToPlayPage = 0;
+                        animator.SetInteger("howToPlayPageNumber", howToPlayPage);
                         break;
                     case 3: // Credits
                         OpenMenu(creditsMenu);
@@ -176,7 +181,27 @@ public class MainMenuManager : MonoBehaviour
             case 2: // How to Play Menu
                 switch (markerTarget)
                 {
-                    case 0: // Back to Main Menu
+                    case 0: // Previous Page
+                        howToPlayPage--;
+                        if (howToPlayPage < 0)
+                        {
+                            howToPlayPage = howToPlayMenu.transform.GetChild(2).GetChild(1).childCount - 1;
+                        }
+                        // Insert animation for moving page
+                        animator.SetInteger("howToPlayPageNumber", howToPlayPage);
+                        break;
+
+                    case 1: // Next Page
+                        howToPlayPage++;
+                        if (howToPlayPage > howToPlayMenu.transform.GetChild(2).GetChild(1).childCount - 1)
+                        {
+                            howToPlayPage = 0;
+                        }
+                        // Insert animation for moving page
+                        animator.SetInteger("howToPlayPageNumber", howToPlayPage);
+                        break;
+                        
+                    case 2: // Back to Main Menu
                         OpenMenu(mainMenu);
                         menuPage = 0;
                         markerTarget = 0;
@@ -268,7 +293,7 @@ public class MainMenuManager : MonoBehaviour
     }
     void OpenMenu(GameObject menuToOpen)
     {
-        StartCoroutine(WaitForScreenSwipe(menuToOpen));
+        waitForScreenSwipeCoroutine = StartCoroutine(WaitForScreenSwipe(menuToOpen));
     }
     IEnumerator WaitForScreenSwipe(GameObject menuToOpen)
     {
@@ -281,7 +306,19 @@ public class MainMenuManager : MonoBehaviour
         levelMenu.SetActive(false);
 
         menuToOpen.SetActive(true);
+        if (menuToOpen == mainMenu)
+        {
+            screenDarken.SetActive(false);
+        }
+        else
+        {
+            screenDarken.SetActive(true);
+        }
         animator.SetInteger("markerNumber", markerTarget);
+        animator.SetInteger("menuNumber", menuPage);
+        animator.SetTrigger("switchMenu");
+
+        waitForScreenSwipeCoroutine = null;
     }
     void ChangeScene(string sceneName)
     {
