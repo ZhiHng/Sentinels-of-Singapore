@@ -572,6 +572,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bb09b52f0076d014aa81fbeb38c40f9a, type: 3}
+
 --- !u!1 &259042211
 GameObject:
   m_ObjectHideFlags: 0
