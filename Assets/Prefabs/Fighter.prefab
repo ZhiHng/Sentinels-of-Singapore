@@ -110,8 +110,13 @@ MonoBehaviour:
   hasCommitedCrime: 0
   crimeMat: {fileID: 2100000, guid: 23e89673482587c43b07b42c32a4c839, type: 2}
   npcType: Fighter
-  scoreValue: 10
+  scoreValue: 30
   targetFightPosition: {x: 0, y: 0, z: 0}
+  fightCloudPrefab: {fileID: 7702568320692722008, guid: 5d121166e5511b042971863c8262e9cc, type: 3}
+  waitForPartnerTime: 5
+  fightDuration: 60
+  minimumFightScore: 0
+  scoreLostPerSeverity: 1
 --- !u!65 &934174647296575355
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -201,7 +206,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.7
-  m_Height: 1
+  m_Radius: 0.85969275
+  m_Height: 1.7193855
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}

@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 31 July 2026
+* Date: 7 August 2026
 * Description: Handles interactions between the player and interactable objects.
 */
 
@@ -30,6 +30,10 @@ public class PlayerScript : MonoBehaviour
             if (hit.collider.gameObject.CompareTag("Player Car"))
             {
                 gameManager.HidePlayer();
+            }
+            if (hit.collider.gameObject.CompareTag("Fight Cloud"))
+            {
+                hit.collider.gameObject.GetComponent<FightCloud>().Interacted();
             }
         }
     }

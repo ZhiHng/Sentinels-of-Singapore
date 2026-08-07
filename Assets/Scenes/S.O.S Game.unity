@@ -8885,9 +8885,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   directionalLight: {fileID: 410087039}
-  numberOfEnemies: 10
+  numberOfEnemies: 15
   civiliansSpawnInterval: 3
-  maxCiviliansAtOneTime: 10
+  maxCiviliansAtOneTime: 5
   pickPocketPrefab: {fileID: 9165486681080740625, guid: 59a08c2441b2a064d845404656e92507, type: 3}
   smokerPrefab: {fileID: 2823830208621716385, guid: 6e2932ea04082ca4f80336a7bcbeccd2, type: 3}
   fighterPrefab: {fileID: 2997136342156754846, guid: 59ffbf751d680134586a9db092fecb4f, type: 3}

@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 6 August 2026
+* Date: 7 August 2026
 * Description: Spawns NPCs.
 */
 
@@ -18,6 +18,7 @@ public class NPCManager : MonoBehaviour
     [SerializeField] int civiliansSpawnInterval;
     [SerializeField] int maxCiviliansAtOneTime;
     int numberOfCivilians;
+    bool isNextEnemySpawnFighter = false;
     [SerializeField] GameObject pickPocketPrefab;
     [SerializeField] GameObject smokerPrefab;
     [SerializeField] GameObject fighterPrefab;
@@ -112,12 +113,14 @@ public class NPCManager : MonoBehaviour
             {
                 Vector3 fightPosition = eventPoints[Random.Range(0, NPCManager.eventPoints.Length)].position;
                 GameObject newEnemy;
-                if (enemyPrefab == fighterPrefab && i <= numberToSpawn - 1) // Check if it's a fighter and not the last enemy to spawn
+                if (isNextEnemySpawnFighter)
                 {
-                    // Spawn the fighter at a random event point
-                    newEnemy = Instantiate(enemyPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
-                    newEnemy.GetComponent<NPCScript>().targetFightPosition = fightPosition; // Tells the extra fighter where to go
-                    i++; // Increment i to account for the extra fighter spawned
+                    enemyPrefab = fighterPrefab;
+                    isNextEnemySpawnFighter = false;
+                }
+                else if (enemyPrefab == fighterPrefab && i <= numberToSpawn - 1) // Check if it's a fighter and not the last enemy to spawn
+                {
+                    isNextEnemySpawnFighter = true;
                 }
                 else if (i == numberToSpawn)
                 {

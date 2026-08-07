@@ -1,11 +1,10 @@
 /*
-* Author: joel
-* Date: 6th August 2026
+* Author: Zhi Hng
+* Date: 7 August 2026
 * Description: Handles the AI for all the NPCs.
 */
 
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -19,11 +18,11 @@ public class NPCScript : MonoBehaviour
     Material originalMat;
     Renderer npcRenderer;
     NavMeshAgent agent;
-    [SerializeField] string npcType;
+    public string npcType;
     public int scoreValue;
     Vector3 currentTargetPosition;
     Coroutine timerBeforeDestroyCoroutine;
-    Coroutine walkingVariationCoroutine;
+    [HideInInspector] public Coroutine walkingVariationCoroutine;
     Coroutine runFromPlayerCoroutine;
     int pathwayMask;
     int walkableMask;
@@ -47,47 +46,28 @@ public class NPCScript : MonoBehaviour
     Coroutine patienceCoroutine;
 
     // Fighter Variables
-    [Header("Fighter Settings")]
+    [HideInInspector] public Vector3 targetFightPosition;
 
-    [HideInInspector]
-    public Vector3 targetFightPosition;
+    [SerializeField] GameObject fightCloudPrefab;
+    [SerializeField] float waitForPartnerTime = 120f;
+    [SerializeField] float fightDuration = 60f;
+    [SerializeField] int minimumFightScore = 0;
+    [SerializeField] int scoreLostPerSeverity = 1;
 
-    [SerializeField]
-    GameObject fightCloudVFXPrefab;
-
-    [SerializeField]
-    Vector3 fightCloudOffset = new Vector3(0f, 1.5f, 0f);
-
-    [SerializeField]
-    float matchingTargetDistance = 1f;
-
-    [SerializeField]
-    float fightDuration = 10f;
-
-    [SerializeField]
-    int maximumFightSeverity = 20;
-
-    [SerializeField]
-    int scoreLostPerSeverity = 4;
-
-    [SerializeField]
-    int minimumFightScore = 10;
-
-    bool hasReachedFightPosition = false;
-    bool hasStartedFighting = false;
+    NPCScript partner;
+    bool hasWaited = false;
+    bool waiting;
+    bool fighting;
+    bool leader;
     bool fightResolved = false;
 
-    int fightSeverity = 0;
+    GameObject fightCloud;
 
-    NPCScript pairedFighter;
-    NPCScript fightController;
+    int severity;
 
-    GameObject spawnedFightCloud;
-
+    Coroutine waitCoroutine;
+    Coroutine severityCoroutine;
     Coroutine fightCoroutine;
-
-    static readonly List<NPCScript> waitingFighters = new List<NPCScript>();
-
 
     void Start()
     {
@@ -251,18 +231,22 @@ public class NPCScript : MonoBehaviour
         else if (npcType == "Fighter")
         {
             // Check if the fighter has reached the fight position
-            if (!hasReachedFightPosition &&
+            if (!waiting &&
+                !fighting &&
                 !agent.pathPending &&
-                agent.remainingDistance != Mathf.Infinity &&
-                agent.remainingDistance <= agent.stoppingDistance)
+                agent.remainingDistance <= agent.stoppingDistance && !hasWaited)
             {
                 ReachFightPosition();
             }
+            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance && !waiting && !fighting && hasWaited)
+            {
+                Destroy(gameObject);
+            }
             // Fighter behavior here
             // Joel code here
-            // Once reaching target position. wait until another fighter reaches the same position. Then start fighting with the cloud vfx overlayed.
+            // Once reaching target position. wait until another fighter reaches the same position. Then start fighting with the cloud vfx overlayed and a collider over it.
             // Every second, variable severity increases.
-            // After 20 sec if player does not interact, delete both fighters. If player interacts, add score. Add more score if severity is lower.
+            // After 20 sec if player does not interact, delete both fighters. If player interacts, add score. Add more score if severity is lower. If the fighter does not fight when reaching destination for 40 sec, it will head to a spawn point to despawn.
 
         }
     }
@@ -328,10 +312,6 @@ public class NPCScript : MonoBehaviour
     {
         while (true)
         {
-            if (npcType == "Fighter" && hasReachedFightPosition)
-            {
-            yield break;
-            }
             agent.isStopped = false;
             agent.speed = Random.Range(3f, 4f);
             yield return new WaitForSeconds(Random.Range(10, 15));
@@ -470,9 +450,31 @@ public class NPCScript : MonoBehaviour
                 timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(5));
             }
         }
+        if (other.gameObject.CompareTag("NPC") && other.GetComponent<NPCScript>().npcType == "Fighter" && npcType == "Fighter")
+        {
+            if (fighting)
+            return;
+
+            NPCScript otherNpc = other.GetComponent<NPCScript>();
+            if (otherNpc == null) return;
+            if (otherNpc.npcType != "Fighter") return;
+
+            // Prevent duplicate fights
+            if (fighting || otherNpc.fighting) return;
+
+            // Decide who should start the fight: always the fighter with the lower ID
+            if (GetInstanceID() < otherNpc.GetInstanceID())
+            {
+                StartFight(otherNpc); // only one fighter runs this
+            }
+        }
+        
     }
     void OnTriggerExit(Collider other)
     {
+        if (fighting)
+            return;
+
         if (other.CompareTag("Traffic Light") && !isTired)
         {
             agent.isStopped = false; // Resume the NPC's movement when it exits the traffic light collider
@@ -533,7 +535,6 @@ public class NPCScript : MonoBehaviour
 
     void StartSmoking()
     {
-        print("SMOKE NOW");
         if (isSmoking) return;
 
         isSmoking = true;
@@ -547,7 +548,6 @@ public class NPCScript : MonoBehaviour
 
     void StopSmoking()
     {
-        print("STOP SMOKE");
         isSmoking = false;
 
         if (lookAroundCoroutine != null)
@@ -561,14 +561,42 @@ public class NPCScript : MonoBehaviour
 /// </summary>
 void ReachFightPosition()
 {
-    hasReachedFightPosition = true;
+    waiting = true;
+    hasWaited = true;
 
-    if (agent != null &&
-        agent.enabled &&
-        agent.isOnNavMesh)
-    {
-        agent.isStopped = true;
-    }
+    agent.isStopped = true;
+
+    StopCoroutine(walkingVariationCoroutine);
+    walkingVariationCoroutine = null;
+    
+    waitCoroutine = StartCoroutine(WaitForPartner());
+}
+
+/// <summary>
+/// Starts the fight between the two fighters.
+/// </summary>
+public void StartFight(NPCScript other)
+{
+    fighting = true;
+    waiting = false;
+
+    partner = other;
+
+    other.partner = this;
+    other.fighting = true;
+    other.waiting = false;
+
+    agent.isStopped = true;
+    other.agent.isStopped = true;
+
+    npcRenderer.material = crimeMat;
+    other.npcRenderer.material = crimeMat;
+
+    if (waitCoroutine != null)
+        StopCoroutine(waitCoroutine);
+
+    if (other.waitCoroutine != null)
+        StopCoroutine(other.waitCoroutine);
 
     if (walkingVariationCoroutine != null)
     {
@@ -576,158 +604,27 @@ void ReachFightPosition()
         walkingVariationCoroutine = null;
     }
 
-    FindFighterPartner();
-}
-
-/// <summary>
-/// Searches for another fighter waiting at the same fight location.
-/// </summary>
-void FindFighterPartner()
-{
-    // Remove fighters that have already been destroyed or resolved.
-    waitingFighters.RemoveAll(
-        fighter => fighter == null || fighter.fightResolved
-    );
-
-    for (int i = 0; i < waitingFighters.Count; i++)
+    if (other.walkingVariationCoroutine != null)
     {
-        NPCScript otherFighter = waitingFighters[i];
-
-        if (otherFighter == this)
-        {
-            continue;
-        }
-
-        if (otherFighter.npcType != "Fighter")
-        {
-            continue;
-        }
-
-        if (!otherFighter.hasReachedFightPosition ||
-            otherFighter.hasStartedFighting ||
-            otherFighter.pairedFighter != null)
-        {
-            continue;
-        }
-
-        // Check whether both fighters were assigned
-        // approximately the same fight position.
-        float targetDistance = Vector3.Distance(
-            targetFightPosition,
-            otherFighter.targetFightPosition
-        );
-
-        if (targetDistance <= matchingTargetDistance)
-        {
-            PairWithFighter(otherFighter);
-            return;
-        }
+        StopCoroutine(other.walkingVariationCoroutine);
+        other.walkingVariationCoroutine = null;
     }
 
-    // No partner found, so this fighter waits in the list.
-    if (!waitingFighters.Contains(this))
+    leader = GetInstanceID() < other.GetInstanceID();
+
+    other.leader = !leader;
+
+    agent.isStopped = true;
+    other.agent.isStopped = true;
+
+    if (leader)
     {
-        waitingFighters.Add(this);
+        SpawnFightCloud();
+
+        severityCoroutine = StartCoroutine(IncreaseSeverity());
+
+        fightCoroutine = StartCoroutine(FightTimeout());
     }
-}
-
-/// <summary>
-/// Connects two fighters together.
-/// </summary>
-void PairWithFighter(NPCScript otherFighter)
-{
-    if (otherFighter == null ||
-        fightResolved ||
-        otherFighter.fightResolved)
-    {
-        return;
-    }
-
-    pairedFighter = otherFighter;
-    otherFighter.pairedFighter = this;
-
-    // This fighter controls the timer, score and VFX.
-    fightController = this;
-    otherFighter.fightController = this;
-
-    waitingFighters.Remove(this);
-    waitingFighters.Remove(otherFighter);
-
-    StartFight();
-}
-
-/// <summary>
-/// Starts the fight between the two fighters.
-/// </summary>
-void StartFight()
-{
-    if (hasStartedFighting ||
-        pairedFighter == null ||
-        fightResolved)
-    {
-        return;
-    }
-
-    hasStartedFighting = true;
-    pairedFighter.hasStartedFighting = true;
-
-    hasCommitedCrime = true;
-    pairedFighter.hasCommitedCrime = true;
-
-    fightSeverity = 0;
-    pairedFighter.fightSeverity = 0;
-
-    if (agent != null &&
-        agent.enabled &&
-        agent.isOnNavMesh)
-    {
-        agent.isStopped = true;
-    }
-
-    if (pairedFighter.agent != null &&
-        pairedFighter.agent.enabled &&
-        pairedFighter.agent.isOnNavMesh)
-    {
-        pairedFighter.agent.isStopped = true;
-    }
-
-    // Change both fighters to the crime material.
-    if (npcRenderer != null && crimeMat != null)
-    {
-        npcRenderer.material = crimeMat;
-    }
-
-    if (pairedFighter.npcRenderer != null &&
-        pairedFighter.crimeMat != null)
-    {
-        pairedFighter.npcRenderer.material =
-            pairedFighter.crimeMat;
-    }
-
-    MakeFightersFaceEachOther();
-    SpawnFightCloud();
-
-    fightCoroutine = StartCoroutine(FightTimer());
-}
-
-/// <summary>
-/// Rotates the fighters so they face one another.
-/// </summary>
-void MakeFightersFaceEachOther()
-{
-    if (pairedFighter == null)
-    {
-        return;
-    }
-
-    Vector3 otherPosition = pairedFighter.transform.position;
-    otherPosition.y = transform.position.y;
-
-    Vector3 myPosition = transform.position;
-    myPosition.y = pairedFighter.transform.position.y;
-
-    transform.LookAt(otherPosition);
-    pairedFighter.transform.LookAt(myPosition);
 }
 
 /// <summary>
@@ -735,199 +632,77 @@ void MakeFightersFaceEachOther()
 /// </summary>
 void SpawnFightCloud()
 {
-    if (pairedFighter == null)
-    {
-        return;
-    }
+    Vector3 pos = (transform.position + partner.transform.position) * 0.5f;
 
-    GameObject selectedVFX = fightCloudVFXPrefab;
+    fightCloud = Instantiate(fightCloudPrefab, pos, Quaternion.identity);
 
-    // Use the other fighter's prefab if this one has none.
-    if (selectedVFX == null)
-    {
-        selectedVFX = pairedFighter.fightCloudVFXPrefab;
-    }
-
-    if (selectedVFX == null)
-    {
-        Debug.LogWarning(
-            "No fight cloud VFX prefab was assigned."
-        );
-
-        return;
-    }
-
-    Vector3 middlePosition =
-        (transform.position +
-         pairedFighter.transform.position) / 2f;
-
-    middlePosition += fightCloudOffset;
-
-    spawnedFightCloud = Instantiate(
-        selectedVFX,
-        middlePosition,
-        Quaternion.identity
-    );
-}
-
-/// <summary>
-/// Raises the severity once every second.
-/// Ends the fight automatically after the duration.
-/// </summary>
-IEnumerator FightTimer()
-{
-    float elapsedTime = 0f;
-    print ("FIGHT STARTED");
-    while (elapsedTime < fightDuration &&
-           !fightResolved)
-    {
-        yield return new WaitForSeconds(1f);
-
-        if (fightResolved)
-        {
-            yield break;
-        }
-
-        elapsedTime += 1f;
-
-        fightSeverity = Mathf.Clamp(
-            fightSeverity + 1,
-            0,
-            maximumFightSeverity
-        );
-
-        if (pairedFighter != null)
-        {
-            pairedFighter.fightSeverity =
-                fightSeverity;
-        }
-
-        Debug.Log(
-            "Fight severity: " + fightSeverity
-        );
-    }
-
-    if (!fightResolved)
-    {
-        ResolveFight(false);
-    }
-}
-
-/// <summary>
-/// Call this when the player interacts with either fighter.
-/// </summary>
-public void Interact()
-{
-    if (npcType != "Fighter")
-    {
-        return;
-    }
-
-    if (!hasStartedFighting ||
-        fightResolved)
-    {
-        return;
-    }
-
-    // Send the interaction to the fighter controlling the event.
-    if (fightController != null &&
-        fightController != this)
-    {
-        fightController.ResolveFight(true);
-    }
-    else
-    {
-        ResolveFight(true);
-    }
+    fightCloud.GetComponent<FightCloud>()
+              .Initialise(this);
 }
 
 /// <summary>
 /// Ends the fight and destroys both fighters.
 /// </summary>
-void ResolveFight(bool playerInteracted)
+public void ResolveFight(bool playerStoppedFight)
 {
     if (fightResolved)
-    {
         return;
-    }
 
     fightResolved = true;
-
-    NPCScript fighterToDestroy = pairedFighter;
-
-    if (fighterToDestroy != null)
+    if (playerStoppedFight)
     {
-        fighterToDestroy.fightResolved = true;
+        int score =
+            Mathf.Max(
+                minimumFightScore,
+                scoreValue - severity * scoreLostPerSeverity);
+
+        gameManager.AddScore(score);
     }
+    if (severityCoroutine != null)
+    StopCoroutine(severityCoroutine);
 
     if (fightCoroutine != null)
-    {
         StopCoroutine(fightCoroutine);
-        fightCoroutine = null;
-    }
 
-    if (playerInteracted)
-    {
-        // A lower severity gives the player more score.
-        int earnedScore = Mathf.Max(
-            minimumFightScore,
-            scoreValue -
-            fightSeverity * scoreLostPerSeverity
-        );
+    if (fightCloud != null)
+        Destroy(fightCloud);
 
-        if (gameManager != null)
-        {
-            gameManager.AddScore(earnedScore);
-        }
-
-        Debug.Log(
-            "Player stopped the fight at severity " +
-            fightSeverity +
-            " and earned " +
-            earnedScore +
-            " points."
-        );
-    }
-    else
-    {
-        Debug.Log(
-            "The fight ended after " +
-            fightDuration +
-            " seconds without player interaction."
-        );
-    }
-
-    if (spawnedFightCloud != null)
-    {
-        Destroy(spawnedFightCloud);
-        spawnedFightCloud = null;
-    }
-
-    waitingFighters.Remove(this);
-    waitingFighters.Remove(fighterToDestroy);
-
-    pairedFighter = null;
-
-    if (fighterToDestroy != null)
-    {
-        fighterToDestroy.pairedFighter = null;
-        Destroy(fighterToDestroy.gameObject);
-    }
+    if (partner != null)
+        Destroy(partner.gameObject);
 
     Destroy(gameObject);
 }
 
-/// <summary>
-/// Cleans up the waiting list and VFX if a fighter is destroyed.
-/// </summary>
-void OnDestroy()
+IEnumerator WaitForPartner()
 {
-    waitingFighters.Remove(this);
+    yield return new WaitForSeconds(waitForPartnerTime);
 
-    if (fightController == this &&
-        spawnedFightCloud != null)
+    if (fighting)
+        yield break;
+
+    waiting = false;
+
+    agent.isStopped = false;
+    print("leaving");
+    currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
+    if (walkingVariationCoroutine == null)
+        walkingVariationCoroutine = StartCoroutine(AddWalkingVariation());
+    MoveToTargetPosition();
+}
+IEnumerator IncreaseSeverity()
+{
+    severity = 0;
+
+    while (true)
     {
-        Destroy(spawnedFightCloud);
+        yield return new WaitForSeconds(1);
+
+        severity++;
     }
+}
+IEnumerator FightTimeout()
+{
+    yield return new WaitForSeconds(fightDuration);
+    ResolveFight(false);
 }
 }
