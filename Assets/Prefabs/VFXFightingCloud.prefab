@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6189510528672959040}
   - component: {fileID: 655506485306900494}
   - component: {fileID: 4954370071847554684}
-  m_Layer: 6
+  m_Layer: 3
   m_Name: VFXFightingCloud
   m_TagString: Fight Cloud
   m_Icon: {fileID: 0}

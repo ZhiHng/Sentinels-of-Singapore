@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 938994124809634060}
   - component: {fileID: 6670312510331704238}
   - component: {fileID: 7584602688385472919}
-  m_Layer: 6
+  m_Layer: 3
   m_Name: Civilian
   m_TagString: NPC
   m_Icon: {fileID: 0}
@@ -112,6 +112,11 @@ MonoBehaviour:
   npcType: Civilian
   scoreValue: 0
   targetFightPosition: {x: 0, y: 0, z: 0}
+  fightCloudPrefab: {fileID: 0}
+  waitForPartnerTime: 40
+  fightDuration: 20
+  minimumFightScore: 10
+  scoreLostPerSeverity: 1
 --- !u!136 &1097116850944088306
 CapsuleCollider:
   m_ObjectHideFlags: 0

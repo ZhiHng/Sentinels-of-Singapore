@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 6818748386106659368}
   - component: {fileID: 7725585220619464969}
   - component: {fileID: 1404069576462390905}
-  m_Layer: 6
+  m_Layer: 3
   m_Name: Smoker
   m_TagString: NPC
   m_Icon: {fileID: 0}
@@ -112,6 +112,11 @@ MonoBehaviour:
   npcType: Smoker
   scoreValue: 20
   targetFightPosition: {x: 0, y: 0, z: 0}
+  fightCloudPrefab: {fileID: 0}
+  waitForPartnerTime: 40
+  fightDuration: 20
+  minimumFightScore: 10
+  scoreLostPerSeverity: 1
 --- !u!135 &7699197441832122451
 SphereCollider:
   m_ObjectHideFlags: 0

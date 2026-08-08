@@ -83,7 +83,6 @@ GameObject:
   - component: {fileID: 127752827319210407}
   - component: {fileID: 7834997614953283123}
   - component: {fileID: 1786925929527075325}
-  - component: {fileID: 7343363869322598176}
   m_Layer: 0
   m_Name: aircon6
   m_TagString: Untagged
@@ -164,28 +163,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &7343363869322598176
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1846146507892175332}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 6202486317043411035, guid: ebc9b94ef9dbd164392b45a626114534, type: 3}
 --- !u!1 &2088211953134302901
 GameObject:
   m_ObjectHideFlags: 0
@@ -197,7 +174,6 @@ GameObject:
   - component: {fileID: 4011379678650657090}
   - component: {fileID: 5696058645461814946}
   - component: {fileID: 6559914158483859057}
-  - component: {fileID: 8747677958626824465}
   m_Layer: 0
   m_Name: voidDeck2
   m_TagString: Untagged
@@ -277,28 +253,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &8747677958626824465
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2088211953134302901}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 4914828287331063249, guid: ebc9b94ef9dbd164392b45a626114534, type: 3}
 --- !u!1 &4369566240486143416
 GameObject:
   m_ObjectHideFlags: 0
@@ -310,7 +264,6 @@ GameObject:
   - component: {fileID: 7028078292201977022}
   - component: {fileID: 5646952622200973307}
   - component: {fileID: 1291681844845731724}
-  - component: {fileID: 7652294730918185729}
   m_Layer: 0
   m_Name: AirconGrill
   m_TagString: Untagged
@@ -390,28 +343,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &7652294730918185729
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4369566240486143416}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -956110574807874355, guid: ebc9b94ef9dbd164392b45a626114534, type: 3}
 --- !u!1 &6209439642955271298
 GameObject:
   m_ObjectHideFlags: 0
@@ -423,7 +354,6 @@ GameObject:
   - component: {fileID: 3860951448306233234}
   - component: {fileID: 7469649275602645467}
   - component: {fileID: 2764135204782353204}
-  - component: {fileID: 5405915238880463254}
   m_Layer: 0
   m_Name: aircon14
   m_TagString: Untagged
@@ -504,28 +434,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &5405915238880463254
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6209439642955271298}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -860884654252821084, guid: ebc9b94ef9dbd164392b45a626114534, type: 3}
 --- !u!1 &6646972272748934952
 GameObject:
   m_ObjectHideFlags: 0
@@ -537,7 +445,6 @@ GameObject:
   - component: {fileID: 8875451673465654607}
   - component: {fileID: 8094431258755657730}
   - component: {fileID: 6413018121712868132}
-  - component: {fileID: 6001283599495679784}
   m_Layer: 0
   m_Name: AirconGrill
   m_TagString: Untagged
@@ -617,28 +524,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &6001283599495679784
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6646972272748934952}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -6210601255575511138, guid: ebc9b94ef9dbd164392b45a626114534, type: 3}
 --- !u!1001 &1582910424631902050
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -703,7 +588,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: LED_Light_3 (3)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4293918907939852902, guid: 1bf657f0c0624b04db8f19fbbabf76e7, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -777,7 +663,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: LED_Light_3 (1)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4293918907939852902, guid: 1bf657f0c0624b04db8f19fbbabf76e7, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -851,7 +738,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: LED_Light_3 (2)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4293918907939852902, guid: 1bf657f0c0624b04db8f19fbbabf76e7, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -925,7 +813,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: LED_Light_3
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4293918907939852902, guid: 1bf657f0c0624b04db8f19fbbabf76e7, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -999,7 +888,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: LED_Light_3 (5)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4293918907939852902, guid: 1bf657f0c0624b04db8f19fbbabf76e7, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1073,7 +963,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: LED_Light_3 (4)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4293918907939852902, guid: 1bf657f0c0624b04db8f19fbbabf76e7, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

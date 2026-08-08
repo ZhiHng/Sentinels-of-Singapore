@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 6 August 2026
+* Date: 8 August 2026
 * Description: Manages the main menu scene and calls level scenes for gameplay.
 */
 
@@ -22,7 +22,7 @@ public class MainMenuManager : MonoBehaviour
     public static int noOfEnemies = 0;
     public static int civilianSpawnInterval = 0;
     public static int maxCivilians = 0;
-    public static int level = 1;
+    public static int level = 0;
     public static int playTime = 0;
     public static int graphicQuality = 0;
     public static int difficulty = 0;
@@ -239,16 +239,16 @@ public class MainMenuManager : MonoBehaviour
                 switch (markerTarget)
                 {
                     case 0: // Level One
-                        level = 1;
+                        level = 0;
 
                         StartLevel();
                         break;
                     case 1: // Level Two
-                        level = 2;
+                        level = 1;
                         StartLevel();
                         break;
                     case 2: // Level Three
-                        level = 3;
+                        level = 2;
                         StartLevel();
                         break;
                     case 3: // Back to Main Menu
@@ -299,23 +299,23 @@ public class MainMenuManager : MonoBehaviour
         // Set level parameters here.
         switch (level)
         {
-            case 1:
+            case 0:
                 noOfEnemies = 10;
                 civilianSpawnInterval = 3;
                 maxCivilians = 10;
-                playTime = 3;
+                playTime = 1;
                 break;
-            case 2:
+            case 1:
                 noOfEnemies = 20;
                 civilianSpawnInterval = 2;
                 maxCivilians = 15;
-                playTime = 4;
+                playTime = 1;
                 break;
-            case 3:
+            case 2:
                 noOfEnemies = 30;
                 civilianSpawnInterval = 1;
                 maxCivilians = 20;
-                playTime = 5;
+                playTime = 1;
                 break;
         }
         ChangeScene("S.O.S Game");

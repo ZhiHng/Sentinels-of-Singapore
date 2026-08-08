@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 7 August 2026
+* Date: 8 August 2026
 * Description: Spawns NPCs.
 */
 
@@ -17,22 +17,26 @@ public class NPCManager : MonoBehaviour
     [SerializeField] int numberOfEnemies;
     [SerializeField] int civiliansSpawnInterval;
     [SerializeField] int maxCiviliansAtOneTime;
-    int numberOfCivilians;
     bool isNextEnemySpawnFighter = false;
     [SerializeField] GameObject pickPocketPrefab;
     [SerializeField] GameObject smokerPrefab;
     [SerializeField] GameObject fighterPrefab;
     [SerializeField] GameObject civilianPrefab;
-    [SerializeField] int playTime;
+    public int playTime; // In minutes
     public static List<GameObject> spawnedCivilians = new List<GameObject>();
     float timer = 0f;
     int enemiesToSpawnEachRound;
     Coroutine spawnEnemyCoroutine;
-    int level = 1; // Current level of the game, starting from level 1
+    [HideInInspector] public int level = 0; // Current level of the game, starting from level 1
     int graphicQuality = 0;
     int difficulty = 0;
+    int maxPossibleScore = 0;
     void Start()
     {
+        spawnedCivilians.Clear();
+        spawnEnemyCoroutine = null;
+        
+        timer = 0;
         if (MainMenuManager.noOfEnemies != 0)
         {
             // Use the values from MainMenuManager
@@ -43,8 +47,10 @@ public class NPCManager : MonoBehaviour
             level = MainMenuManager.level;
             graphicQuality = MainMenuManager.graphicQuality;
             difficulty = MainMenuManager.difficulty;
-            print("Level:" + level + " Graphic Quality:" + graphicQuality + " Difficulty:" + difficulty);
+            print("Level:" + (level + 1) + " Graphic Quality:" + graphicQuality + " Difficulty:" + difficulty);
         }
+        print("playtime: " + playTime);
+
         directionalLight.transform.rotation = Quaternion.Euler(50f, 0, 0);
         degreeToTurnLight = (180 - 50) / (8 * 60); // (start degree - end degree) / (minutes in seconds)
         // Gets all spawn points and event points placed in unity editor allowing for quick modification of points
@@ -70,6 +76,7 @@ public class NPCManager : MonoBehaviour
     }
     void Update()
     {
+        
         directionalLight.transform.Rotate(degreeToTurnLight * Time.deltaTime, 0, 0);
         timer += Time.deltaTime;
 
@@ -83,6 +90,12 @@ public class NPCManager : MonoBehaviour
             {
                 spawnEnemyCoroutine = StartCoroutine(SpawnEnemiesOverTime(enemiesToSpawnEachRound, 1f)); // Spawn enemies over time
             }
+        }
+        if (seconds / 60 >= playTime)
+        {
+            StopAllCoroutines();
+            timer = 0;
+            GameManager.Instance.EndGame(maxPossibleScore);
         }
     }
     /// <summary>
@@ -127,6 +140,7 @@ public class NPCManager : MonoBehaviour
                     enemyPrefab = pickPocketPrefab; // Ensure the last enemy is a PickPocket
                 }
                 newEnemy = Instantiate(enemyPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
+                maxPossibleScore += enemyPrefab.GetComponent<NPCScript>().scoreValue;
                 if (enemyPrefab == fighterPrefab) newEnemy.GetComponent<NPCScript>().targetFightPosition = fightPosition; // Tells the fighter where the previous fighter went
             }
         }
@@ -155,7 +169,6 @@ public class NPCManager : MonoBehaviour
             if (spawnedCivilians.Count < maxCiviliansAtOneTime)
             {
                 SpawnCivilians(1); // Spawn one civilian at a time
-                numberOfCivilians++;
             }
             yield return new WaitForSeconds(Random.Range(Mathf.Max(aroundInterval - 1f, 0f), aroundInterval + 1f)); // Wait for a random interval around the specified time
         }

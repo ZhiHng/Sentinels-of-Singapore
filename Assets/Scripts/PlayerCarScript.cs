@@ -10,7 +10,6 @@ using UnityEngine.AI;
 
 public class PlayerCarScript : MonoBehaviour
 {
-    [SerializeField] GameManager gameManager;
     [SerializeField] EzerealCarController carLogic;
     NavMeshObstacle carBodyNavObstacle;
     void Start()
@@ -22,7 +21,7 @@ public class PlayerCarScript : MonoBehaviour
         if (carLogic.currentSpeed < 0.1)
         {
             carLogic.currentSpeed = 0f;
-            gameManager.HidePlayerCar();
+            GameManager.Instance.HidePlayerCar();
         }
     }
     void Update()

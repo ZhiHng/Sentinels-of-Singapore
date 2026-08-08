@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 6830142867713074916}
   - component: {fileID: 9015615925900416194}
   - component: {fileID: 261940314332182119}
-  m_Layer: 6
+  m_Layer: 3
   m_Name: Fighter
   m_TagString: NPC
   m_Icon: {fileID: 0}

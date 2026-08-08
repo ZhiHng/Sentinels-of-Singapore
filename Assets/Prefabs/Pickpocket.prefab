@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: -5855703114324165981}
   - component: {fileID: 2038711800564387324}
   - component: {fileID: 8402683192314750854}
-  m_Layer: 6
+  m_Layer: 3
   m_Name: Pickpocket
   m_TagString: NPC
   m_Icon: {fileID: 0}
@@ -112,6 +112,11 @@ MonoBehaviour:
   npcType: Pickpocket
   scoreValue: 30
   targetFightPosition: {x: 0, y: 0, z: 0}
+  fightCloudPrefab: {fileID: 0}
+  waitForPartnerTime: 40
+  fightDuration: 20
+  minimumFightScore: 10
+  scoreLostPerSeverity: 1
 --- !u!136 &1214662500453252686
 CapsuleCollider:
   m_ObjectHideFlags: 0
