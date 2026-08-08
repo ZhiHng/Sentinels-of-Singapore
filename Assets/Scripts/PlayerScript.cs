@@ -10,6 +10,7 @@ public class PlayerScript : MonoBehaviour
 {
     [SerializeField] LayerMask interactable;
     [SerializeField] NPCManager npcManager;
+    [HideInInspector] public bool isResume = true;
     void Start()
     {
         GameManager.Instance.ResetToGameState();
@@ -47,6 +48,29 @@ public class PlayerScript : MonoBehaviour
             GameManager.Instance.isEndScreen = false;
             GameManager.Instance.ResetToMainMenu(npcManager.level);
         }
+        if (GameManager.Instance.isPauseMenu)
+        {
+            if (isResume)
+            {
+                GameManager.Instance.EscPressed();
+            }
+            else
+            {
+                GameManager.Instance.ResetToMainMenu(-1);
+            }
+        }
+    }
+    void OnWASD()
+    {
+        if (GameManager.Instance.isPauseMenu)
+        {
+            isResume = !isResume;
+            GameManager.Instance.ChangePauseMenuScroll(isResume);
+        }
+    }
+    void OnEsc()
+    {
+        GameManager.Instance.EscPressed();
     }
 }
 

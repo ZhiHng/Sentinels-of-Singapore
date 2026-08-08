@@ -47,9 +47,7 @@ public class NPCManager : MonoBehaviour
             level = MainMenuManager.level;
             graphicQuality = MainMenuManager.graphicQuality;
             difficulty = MainMenuManager.difficulty;
-            print("Level:" + (level + 1) + " Graphic Quality:" + graphicQuality + " Difficulty:" + difficulty);
         }
-        print("playtime: " + playTime);
 
         directionalLight.transform.rotation = Quaternion.Euler(50f, 0, 0);
         degreeToTurnLight = (180 - 50) / (8 * 60); // (start degree - end degree) / (minutes in seconds)

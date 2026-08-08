@@ -8,11 +8,13 @@ using System.Collections;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 public class GameManager : MonoBehaviour
 {
+    Animator animator;
     public static GameManager Instance;
     int currentScore;
     GameObject playerParent;
@@ -20,6 +22,7 @@ public class GameManager : MonoBehaviour
     GameObject[] carObjectsToDisable = new GameObject[3];
     [SerializeField] GameObject endScreenUI;
     [SerializeField] GameObject crosshair;
+    [SerializeField] GameObject pauseScreen;
     TextMeshProUGUI[] endScreenText;
     CinemachineBrain playerCinemachineBrain;
     Volume globalVolume; // Uses global volume post processing to change screen colour and vignette
@@ -29,6 +32,7 @@ public class GameManager : MonoBehaviour
     public string[] levelGrades = new string[3];
     public bool isEndScreen = false;
     string grade = "";
+    [HideInInspector] public bool isPauseMenu = false;
 
     public float typingSpeed = 0.05f; // Delay between each character
     void Awake()
@@ -44,6 +48,10 @@ public class GameManager : MonoBehaviour
             return;
         }
         DontDestroyOnLoad(gameObject);
+    }
+    void Start()
+    {
+        animator = GetComponent<Animator>();
     }
 
     public void AddScore(int scoreToAdd)
@@ -176,16 +184,25 @@ public class GameManager : MonoBehaviour
         playerParent.GetComponentInChildren<CharacterController>().enabled = false;
         StartCoroutine(EndGameAnimations(maxPossibleScore));
     }
-    public void ResetToMainMenu(int level)
+    public void ResetToMainMenu(int level) // -1 level if return by pause menu
     {
-        NPCManager.spawnedCivilians.Clear();
-        if (levelScores[level] <= currentScore)
+        if (level != -1)
         {
-            levelScores[level] = currentScore;
-            levelGrades[level] = grade;
+            NPCManager.spawnedCivilians.Clear();
+            if (levelScores[level] <= currentScore)
+            {
+                levelScores[level] = currentScore;
+                levelGrades[level] = grade;
+            }
         }
+        
         currentScore = 0;
+        crosshair.SetActive(false);
+        scoreText.gameObject.SetActive(false);
         endScreenUI.SetActive(false);
+        pauseScreen.SetActive(false);
+        isPauseMenu = false;
+        Time.timeScale = 1;
         UnityEngine.SceneManagement.SceneManager.LoadScene("Main Menu");
     }
     public void ResetToGameState()
@@ -207,7 +224,31 @@ public class GameManager : MonoBehaviour
         crosshair.SetActive(true);
         scoreText.gameObject.SetActive(true);
         endScreenUI.SetActive(false);
+        pauseScreen.SetActive(false);
+        isPauseMenu = false;
+        Time.timeScale = 1;
         currentScore = 0;
         scoreText.text = "Score: " + currentScore;
+    }
+    public void EscPressed()
+    {
+        if (!isPauseMenu)
+        {
+            Time.timeScale = 0;
+            pauseScreen.SetActive(true);
+            isPauseMenu = true;
+            playerParent.GetComponentInChildren<PlayerScript>().isResume = true;
+            animator.SetBool("isResume", true);
+        }
+        else
+        {
+            Time.timeScale = 1;
+            pauseScreen.SetActive(false);
+            isPauseMenu = false;
+        }
+    }
+    public void ChangePauseMenuScroll(bool isResume)
+    {
+        animator.SetBool("isResume", isResume);
     }
 }
