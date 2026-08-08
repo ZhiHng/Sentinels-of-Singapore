@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 7 August 2026
+* Date: 8 August 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -472,14 +472,15 @@ public class NPCScript : MonoBehaviour
     }
     void OnTriggerExit(Collider other)
     {
-        if (fighting)
-            return;
-
-        if (other.CompareTag("Traffic Light") && !isTired)
+        if (other.CompareTag("Traffic Light") && !isTired && !fighting)
         {
-            agent.isStopped = false; // Resume the NPC's movement when it exits the traffic light collider
+            agent.isStopped = false;
         }
-        walkingVariationCoroutine = StartCoroutine(AddWalkingVariation());
+
+        if (!fighting && walkingVariationCoroutine == null)
+        {
+            walkingVariationCoroutine = StartCoroutine(AddWalkingVariation());
+        }
     }
     IEnumerator WaitForPlayerToLeave()
     {
