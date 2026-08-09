@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 8 August 2026
+* Date: 9 August 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -10,13 +10,13 @@ using UnityEngine.AI;
 
 public class NPCScript : MonoBehaviour
 {
-    GameManager gameManager;
+    Animator animator;
     GameObject player;
     Rigidbody npcRigidbody;
-    [HideInInspector] public bool hasCommitedCrime = false;
-    [SerializeField] Material crimeMat;
-    Material originalMat;
-    Renderer npcRenderer;
+    public bool hasCommitedCrime = false;
+    // [SerializeField] Material crimeMat;
+    // Material originalMat;
+    // Renderer npcRenderer;
     NavMeshAgent agent;
     public string npcType;
     public int scoreValue;
@@ -71,11 +71,11 @@ public class NPCScript : MonoBehaviour
 
     void Start()
     {
+        animator = GetComponent<Animator>();
         npcRigidbody = GetComponent<Rigidbody>();
-        gameManager = FindFirstObjectByType<GameManager>();
         player = GameObject.FindGameObjectWithTag("Player");
-        npcRenderer = GetComponent<Renderer>();
-        originalMat = npcRenderer.material;
+        // npcRenderer = GetComponent<Renderer>();
+        // originalMat = npcRenderer.material;
         pathwayMask = 1 << NavMesh.GetAreaFromName("Pathway");
         walkableMask = 1 << NavMesh.GetAreaFromName("Walkable");
         agent = GetComponent<NavMeshAgent>();
@@ -121,6 +121,14 @@ public class NPCScript : MonoBehaviour
     }
     void Update()
     {
+        if (!agent.isStopped != animator.GetBool("isWalking"))
+        {
+            animator.SetBool("isWalking", !agent.isStopped);
+        }
+        if (animator.GetBool("isRunning") != agent.speed >= 5) // Only changes when speed goes over or below threshold.
+        {
+            animator.SetBool("isRunning", agent.speed >= 5);
+        }
         if (npcType == "Civilian")
         {
             // Civilian behavior here
@@ -176,24 +184,28 @@ public class NPCScript : MonoBehaviour
                 }
                 if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
                 {
+                    if (hasCommitedCrime) NPCManager.offenders.Remove(gameObject);
                     Destroy(gameObject);
                 }
             }
         }
+        // Smoke Bugs Cnt smoke when reaching target location.
         else if (npcType == "Smoker")
         {
-            // Reached smoking location
             if (hasFinishedSmoking &&
                 !agent.pathPending &&
                 agent.remainingDistance <= agent.stoppingDistance)
             {
+                NPCManager.offenders.Remove(gameObject);
                 Destroy(gameObject);
             }
+            // Reached smoking location
             if (!hasStartedSmoking &&
                 agent.hasPath &&
                 agent.remainingDistance <= agent.stoppingDistance &&
                 !agent.pathPending)
             {
+                print("pls smoke");
                 hasStartedSmoking = true;
                 agent.isStopped = true;
 
@@ -242,12 +254,6 @@ public class NPCScript : MonoBehaviour
             {
                 Destroy(gameObject);
             }
-            // Fighter behavior here
-            // Joel code here
-            // Once reaching target position. wait until another fighter reaches the same position. Then start fighting with the cloud vfx overlayed and a collider over it.
-            // Every second, variable severity increases.
-            // After 20 sec if player does not interact, delete both fighters. If player interacts, add score. Add more score if severity is lower. If the fighter does not fight when reaching destination for 40 sec, it will head to a spawn point to despawn.
-
         }
     }
     /// <summary>
@@ -302,7 +308,8 @@ public class NPCScript : MonoBehaviour
     {
         yield return new WaitForSeconds(duration); // Wait for the specified duration
         if (npcType == "Civilian") NPCManager.spawnedCivilians.Remove(gameObject); // Remove the civilian from the list of spawned civilians
-        Destroy(gameObject); // Destroy the pickpocket after the timer expires
+        if (npcType == "Pickpocket" || npcType == "Smoker" || npcType == "Fighter" && hasCommitedCrime) NPCManager.offenders.Remove(gameObject);
+        Destroy(gameObject);
     }
     /// <summary>
     /// Adds variation in movement, including, speed, stopping and changing target position.
@@ -423,9 +430,10 @@ public class NPCScript : MonoBehaviour
                 agent.isStopped = true; // Stop the NPC when it enters the traffic light collider
             }
         }
-        if (other.name.Contains("Civilian") && gameObject.name.Contains("Pickpocket") && !hasCommitedCrime)
+        if (other.CompareTag("NPC") && other.gameObject.GetComponent<NPCScript>().npcType == "Civilian" && npcType == "Pickpocket" && !hasCommitedCrime)
         {
-            npcRenderer.material = crimeMat;
+            // npcRenderer.material = crimeMat;
+            NPCManager.offenders.Add(gameObject);
             hasCommitedCrime = true;
             currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
             MoveToTargetPosition();
@@ -446,7 +454,7 @@ public class NPCScript : MonoBehaviour
             npcRigidbody.AddForce(relativeDirection * 150f, ForceMode.Impulse);
             if (timerBeforeDestroyCoroutine == null) 
             {
-                gameManager.AddScore(-20);
+                GameManager.Instance.AddScore(-20);
                 timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(5));
             }
         }
@@ -523,6 +531,8 @@ public class NPCScript : MonoBehaviour
 
     IEnumerator Smoke()
     {
+        print("smoke");
+        agent.isStopped = true;
         yield return new WaitForSeconds(10f);
 
         StopSmoking();
@@ -540,7 +550,8 @@ public class NPCScript : MonoBehaviour
 
         isSmoking = true;
 
-        npcRenderer.material = crimeMat;
+        // npcRenderer.material = crimeMat;
+        NPCManager.offenders.Add(gameObject);
         hasCommitedCrime = true;
 
         smokingCoroutine = StartCoroutine(Smoke());
@@ -590,8 +601,8 @@ public void StartFight(NPCScript other)
     agent.isStopped = true;
     other.agent.isStopped = true;
 
-    npcRenderer.material = crimeMat;
-    other.npcRenderer.material = crimeMat;
+    // npcRenderer.material = crimeMat;
+    // other.npcRenderer.material = crimeMat;
 
     if (waitCoroutine != null)
         StopCoroutine(waitCoroutine);
@@ -620,6 +631,7 @@ public void StartFight(NPCScript other)
 
     if (leader)
     {
+        NPCManager.offenders.Add(gameObject);
         SpawnFightCloud();
 
         severityCoroutine = StartCoroutine(IncreaseSeverity());
@@ -657,7 +669,7 @@ public void ResolveFight(bool playerStoppedFight)
                 minimumFightScore,
                 scoreValue - severity * scoreLostPerSeverity);
 
-        gameManager.AddScore(score);
+        GameManager.Instance.AddScore(score);
     }
     if (severityCoroutine != null)
     StopCoroutine(severityCoroutine);
@@ -671,6 +683,7 @@ public void ResolveFight(bool playerStoppedFight)
     if (partner != null)
         Destroy(partner.gameObject);
 
+    NPCManager.offenders.Remove(gameObject);
     Destroy(gameObject);
 }
 

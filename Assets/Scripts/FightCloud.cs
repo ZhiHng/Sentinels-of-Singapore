@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 7 August 2026
+* Date: 9 August 2026
 * Description: Handles the interaction with player and calls NPC for addition of score
 */
 
@@ -27,6 +27,14 @@ public class FightCloud : MonoBehaviour
         if (leader != null)
         {
             leader.ResolveFight(true);
+        }
+    }
+
+    void CollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player Car"))
+        {
+            leader.ResolveFight(false);
         }
     }
 }

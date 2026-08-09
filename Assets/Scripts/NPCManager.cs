@@ -24,6 +24,7 @@ public class NPCManager : MonoBehaviour
     [SerializeField] GameObject civilianPrefab;
     public int playTime; // In minutes
     public static List<GameObject> spawnedCivilians = new List<GameObject>();
+    public static List<GameObject> offenders = new List<GameObject>();
     float timer = 0f;
     int enemiesToSpawnEachRound;
     Coroutine spawnEnemyCoroutine;
@@ -34,6 +35,7 @@ public class NPCManager : MonoBehaviour
     void Start()
     {
         spawnedCivilians.Clear();
+        offenders.Clear();
         spawnEnemyCoroutine = null;
         
         timer = 0;
