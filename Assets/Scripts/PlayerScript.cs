@@ -9,18 +9,38 @@ using UnityEngine.AI; // Import Unity-specific classes like MonoBehaviour, GameO
 
 public class PlayerScript : MonoBehaviour
 {
+    [SerializeField] AudioClip[] audioClips = new AudioClip[2];
     [SerializeField] LayerMask interactable;
     [SerializeField] NPCManager npcManager;
     [HideInInspector] public bool isResume = true;
     int pathwayIndex;
     int lastArea = -1;
+    public bool isChasing = false;
+    bool lastIsChasing = false;
+    AudioSource audioSource;
     void Start()
     {
         GameManager.Instance.ResetToGameState();
         pathwayIndex = NavMesh.GetAreaFromName("Pathway");
+        audioSource = GetComponent<AudioSource>();
+        audioSource.volume = 0.1f;
     }
     void Update()
     {
+        if (isChasing != lastIsChasing)
+        {
+            if (isChasing)
+            {
+                audioSource.clip = audioClips[1];
+                audioSource.volume = 1;
+            }
+            else
+            {
+                audioSource.clip = audioClips[0];
+                audioSource.volume = 0.05f;
+            }
+            lastIsChasing = isChasing;
+        }
         NavMeshHit hit;
         if (NavMesh.SamplePosition(transform.position, out hit, 2.0f, NavMesh.AllAreas))
         {
@@ -29,7 +49,7 @@ public class PlayerScript : MonoBehaviour
             if (currentMask != lastArea)
             {
                 // Do whatever you need here
-                if ((currentMask & (1 << pathwayIndex)) == 0)
+                if ((currentMask & (1 << pathwayIndex)) == 0 && !isChasing)
                 {
                     print("Jaywalking -5 points");
                     GameManager.Instance.AddScore(-5);

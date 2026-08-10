@@ -265,6 +265,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82caea420820ab547b863512e54fa034, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCScript
+  shoutAudio:
+  - {fileID: 8300000, guid: 07cfc0bdd65e3324daf2a0f0cdd2bb63, type: 3}
+  - {fileID: 8300000, guid: 22d5f21465309eb43aeff33a2d318df9, type: 3}
+  fightAudio: {fileID: 8300000, guid: ce845acb837bff94db504d0f9aa8d430, type: 3}
   hasCommitedCrime: 0
   npcType: Pickpocket
   scoreValue: 30

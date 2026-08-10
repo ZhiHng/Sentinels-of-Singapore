@@ -52,7 +52,7 @@ public class NPCManager : MonoBehaviour
         }
 
         directionalLight.transform.rotation = Quaternion.Euler(50f, 0, 0);
-        degreeToTurnLight = (180 - 50) / (8 * 60); // (start degree - end degree) / (minutes in seconds)
+        degreeToTurnLight = (180 - 50) / (8 * 60) / 8 * playTime; // (start degree - end degree) / (minutes in seconds) * scaled to playTime duration
         // Gets all spawn points and event points placed in unity editor allowing for quick modification of points
         GameObject[] spawnPointObjects = GameObject.FindGameObjectsWithTag("Spawn Point");
         targetPoints = new Transform[spawnPointObjects.Length];
@@ -71,7 +71,7 @@ public class NPCManager : MonoBehaviour
 
         enemiesToSpawnEachRound = numberOfEnemies / playTime;
         int remainderEnemies = numberOfEnemies % playTime;
-        spawnEnemyCoroutine = StartCoroutine(SpawnEnemiesOverTime(enemiesToSpawnEachRound + remainderEnemies, 1f)); // Spawn the remainder of the enemies in the first round
+        spawnEnemyCoroutine = StartCoroutine(SpawnEnemiesOverTime(enemiesToSpawnEachRound + remainderEnemies, 3f)); // Spawn the remainder of the enemies in the first round
         StartCoroutine(SpawnCiviliansOverTime(civiliansSpawnInterval)); // Spawn civilians over time
     }
     void Update()

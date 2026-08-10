@@ -10,6 +10,8 @@ using UnityEngine.AI;
 
 public class NPCScript : MonoBehaviour
 {
+    [SerializeField] AudioClip[] shoutAudio = new AudioClip[2];
+    AudioSource audioSource;
     Animator animator;
     GameObject player;
     Rigidbody npcRigidbody;
@@ -112,6 +114,7 @@ public class NPCScript : MonoBehaviour
         }
         else if (npcType == "Fighter")
         {
+            audioSource = GetComponent<AudioSource>();
             currentTargetPosition = targetFightPosition;
             MoveToTargetPosition();
         }
@@ -346,13 +349,13 @@ public class NPCScript : MonoBehaviour
     /// <returns></returns>
     IEnumerator RunFromPlayer()
     {
-        int run = Random.Range(0,2); // Randomise chance to run when seeing player.
+        int run = Random.Range(0,3); // Randomise chance to run when seeing player.
         switch (run)
         {
-            case 0:
+            case 0 or 1:
                 isAttemptingToRun = true;
                 break;
-            case 1:
+            case 2:
                 isAttemptingToRun = false;
                 break;
         }
@@ -370,10 +373,12 @@ public class NPCScript : MonoBehaviour
             float runDistance = 10f;
             isRunning = true;
             StartCoroutine(DecreaseSpeedOverTime(0.25f, 0.025f, 4f)); // Gets Tired after running for a while
+            player.GetComponent<PlayerScript>().isChasing = true;
             while (isRunning)
             {
                 if (GetDistanceFromObjectVector(player.transform.position) > distanceBeforeStopRunning)
                 {
+                    player.GetComponent<PlayerScript>().isChasing = false;
                     isRunning = false;
                 }
                 // Direction away from player
@@ -431,6 +436,20 @@ public class NPCScript : MonoBehaviour
         }
         if (other.CompareTag("NPC") && other.gameObject.GetComponent<NPCScript>().npcType == "Civilian" && npcType == "Pickpocket" && !hasCommitedCrime)
         {
+            int ran = Random.Range(0,3);
+            switch (ran)
+            {
+                case 0 or 1:
+                    if (other.gameObject.name.Contains("Civilian1"))
+                    {
+                        AudioSource.PlayClipAtPoint(shoutAudio[0], transform.position);
+                    }
+                    else
+                    {
+                        AudioSource.PlayClipAtPoint(shoutAudio[1], transform.position);
+                    }
+                    break;
+            }
             // npcRenderer.material = crimeMat;
             NPCManager.offenders.Add(gameObject);
             hasCommitedCrime = true;
@@ -533,7 +552,7 @@ public class NPCScript : MonoBehaviour
     IEnumerator Smoke()
     {
         agent.isStopped = true;
-        yield return new WaitForSeconds(10f);
+        yield return new WaitForSeconds(30f);
 
         StopSmoking();
 
@@ -648,7 +667,7 @@ void SpawnFightCloud()
     Vector3 pos = (transform.position + partner.transform.position) * 0.5f;
 
     fightCloud = Instantiate(fightCloudPrefab, pos, Quaternion.identity);
-
+    audioSource.Play();
     fightCloud.GetComponent<FightCloud>()
               .Initialise(this);
 }

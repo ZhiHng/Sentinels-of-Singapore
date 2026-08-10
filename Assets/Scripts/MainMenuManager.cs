@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 8 August 2026
+* Date: 10 August 2026
 * Description: Manages the main menu scene and calls level scenes for gameplay.
 */
 
@@ -303,19 +303,19 @@ public class MainMenuManager : MonoBehaviour
                 noOfEnemies = 10;
                 civilianSpawnInterval = 3;
                 maxCivilians = 10;
-                playTime = 1;
+                playTime = 3;
                 break;
             case 1:
                 noOfEnemies = 20;
                 civilianSpawnInterval = 2;
                 maxCivilians = 15;
-                playTime = 1;
+                playTime = 4;
                 break;
             case 2:
                 noOfEnemies = 30;
                 civilianSpawnInterval = 1;
                 maxCivilians = 20;
-                playTime = 1;
+                playTime = 5;
                 break;
         }
         ChangeScene("S.O.S Game");

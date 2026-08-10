@@ -232,6 +232,10 @@ public class GameManager : MonoBehaviour
     }
     public void EscPressed()
     {
+        if (isEndScreen)
+        {
+            return;
+        }
         if (!isPauseMenu)
         {
             Time.timeScale = 0;
