@@ -4,6 +4,7 @@
 * Description: Handles interactions between the player and interactable objects.
 */
 
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.AI; // Import Unity-specific classes like MonoBehaviour, GameObject, Collider, and print
 
@@ -18,6 +19,7 @@ public class PlayerScript : MonoBehaviour
     public bool isChasing = false;
     bool lastIsChasing = false;
     AudioSource audioSource;
+    bool isRunRedLight = false;
     void Start()
     {
         GameManager.Instance.ResetToGameState();
@@ -115,6 +117,24 @@ public class PlayerScript : MonoBehaviour
     void OnEsc()
     {
         GameManager.Instance.EscPressed();
+    }
+
+    void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Traffic Light") && Vector3.Distance(transform.position, other.bounds.center) < 9 && !isRunRedLight)
+        {
+            isRunRedLight = true;
+            GameManager.Instance.AddScore(-5);
+            print("Player run red light, -5 score");
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Traffic Light") && isRunRedLight)
+        {
+            isRunRedLight = false;
+        }
     }
 }
 

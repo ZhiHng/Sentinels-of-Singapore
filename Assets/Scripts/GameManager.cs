@@ -56,7 +56,15 @@ public class GameManager : MonoBehaviour
 
     public void AddScore(int scoreToAdd)
     {
-        currentScore += scoreToAdd;
+        if (scoreToAdd > 0)
+        {
+            currentScore += scoreToAdd;
+        }
+        else
+        {
+            currentScore += scoreToAdd * MainMenuManager.difficulty;
+        }
+        
         currentScore = Mathf.Max(0, currentScore);
         scoreText.text = "Score: " + currentScore; // Update the on-screen score display to reflect the new score after collecting an item
     }

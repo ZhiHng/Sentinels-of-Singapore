@@ -18,7 +18,7 @@ public class TrafficLightScript : MonoBehaviour
         animator = GetComponent<Animator>();
         collider1 = transform.GetChild(1).gameObject;
         collider2 = transform.GetChild(0).gameObject;
-        collider2.transform.Translate(Vector3.up * 5);
+        collider2.transform.Translate(Vector3.up * 10);
         StartCoroutine(SwitchColliders());
     }
     /// <summary>
@@ -46,7 +46,7 @@ public class TrafficLightScript : MonoBehaviour
     {
         for (int i = 0; i < 10; i++)
         {
-            collider.transform.Translate(Vector3.up * 0.5f);
+            collider.transform.Translate(Vector3.up * 1f);
             yield return new WaitForSeconds(0.05f); // Wait for 0.5 seconds before moving the collider down
         }
     }
@@ -54,7 +54,7 @@ public class TrafficLightScript : MonoBehaviour
     {
         for (int i = 0; i < 10; i++)
         {
-            collider.transform.Translate(Vector3.down * 0.5f);
+            collider.transform.Translate(Vector3.down * 1f);
             yield return new WaitForSeconds(0.05f); // Wait for 0.5 seconds before moving the collider up
         }
     }

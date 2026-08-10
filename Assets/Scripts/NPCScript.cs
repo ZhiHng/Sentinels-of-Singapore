@@ -425,7 +425,7 @@ public class NPCScript : MonoBehaviour
     {
         if (other.CompareTag("Traffic Light") && !isTired) // !isTired means the NPC is an offender exposed and trying to escape
         {
-            if (GetDistanceFromObjectVector(other.bounds.center) < 9.5f) // Runs if is changing traffic light and in the middle of the road.
+            if (GetDistanceFromObjectVector(other.bounds.center) < 9f) // Runs if is changing traffic light and in the middle of the road.
             {
                 agent.speed = 5.5f;
             }
@@ -543,8 +543,20 @@ public class NPCScript : MonoBehaviour
             yield return new WaitForSeconds(Random.Range(3f, 5f));
 
             float angle = Random.Range(-90f, 90f);
-            transform.Rotate(0, angle, 0);
+            Quaternion startRotation = transform.rotation;
+            Quaternion targetRotation = Quaternion.Euler(0, angle, 0) * startRotation;
 
+            float duration = 1f; // how long the turn should take
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                transform.rotation = Quaternion.Lerp(startRotation, targetRotation, elapsed / duration);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            transform.rotation = targetRotation; // snap to final rotation
             yield return new WaitForSeconds(1f);
         }
     }

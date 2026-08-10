@@ -56,4 +56,9 @@ public class PlayerCarScript : MonoBehaviour
             }
         }
     }
+    
+    void OnEsc()
+    {
+        GameManager.Instance.EscPressed();
+    }
 }
