@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 9 August 2026
+* Date: 10 August 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -276,7 +276,7 @@ public class NPCScript : MonoBehaviour
             float angle = Mathf.Lerp(-coneAngle / 2, coneAngle / 2, i / (float)(rayCount - 1)); // Changes angle every loop
             Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
 
-            if (Physics.Raycast(transform.position, dir, out RaycastHit hit, visionRange))
+            if (Physics.Raycast(transform.position + Vector3.up, dir, out RaycastHit hit, visionRange))
             {
                 if (hit.collider.CompareTag("Player Collider"))
                 {
@@ -286,7 +286,7 @@ public class NPCScript : MonoBehaviour
             }
 
             // Visualize rays in Scene view
-            Debug.DrawRay(transform.position, dir * visionRange, Color.red);
+            Debug.DrawRay(transform.position + Vector3.up, dir * visionRange, Color.red);
         }
     }
     float GetDistanceFromObjectVector(Vector3 targetPosition)
@@ -421,7 +421,7 @@ public class NPCScript : MonoBehaviour
     {
         if (other.CompareTag("Traffic Light") && !isTired) // !isTired means the NPC is an offender exposed and trying to escape
         {
-            if (GetDistanceFromObjectVector(other.bounds.center) < 10) // Runs if is changing traffic light and in the middle of the road.
+            if (GetDistanceFromObjectVector(other.bounds.center) < 9.5f) // Runs if is changing traffic light and in the middle of the road.
             {
                 agent.speed = 5.5f;
             }

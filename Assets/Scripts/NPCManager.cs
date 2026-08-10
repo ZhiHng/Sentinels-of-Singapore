@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 8 August 2026
+* Date: 10 August 2026
 * Description: Spawns NPCs.
 */
 
@@ -18,10 +18,10 @@ public class NPCManager : MonoBehaviour
     [SerializeField] int civiliansSpawnInterval;
     [SerializeField] int maxCiviliansAtOneTime;
     bool isNextEnemySpawnFighter = false;
-    [SerializeField] GameObject pickPocketPrefab;
-    [SerializeField] GameObject smokerPrefab;
-    [SerializeField] GameObject fighterPrefab;
-    [SerializeField] GameObject civilianPrefab;
+    [SerializeField] GameObject[] pickPocketPrefab = new GameObject[3];
+    [SerializeField] GameObject[] smokerPrefab = new GameObject[3];
+    [SerializeField] GameObject[] fighterPrefab = new GameObject[3];
+    [SerializeField] GameObject[] civilianPrefab = new GameObject[3];
     public int playTime; // In minutes
     public static List<GameObject> spawnedCivilians = new List<GameObject>();
     public static List<GameObject> offenders = new List<GameObject>();
@@ -108,17 +108,18 @@ public class NPCManager : MonoBehaviour
         {
             int randomEnemyType = Random.Range(0, 3); // Randomly choose between 0, 1, or 2
             GameObject enemyPrefab = null;
+            int prefabIndex = Random.Range(0,3);
 
             switch (randomEnemyType)
             {
                 case 0:
-                    enemyPrefab = pickPocketPrefab;
+                    enemyPrefab = pickPocketPrefab[prefabIndex];
                     break;
                 case 1:
-                    enemyPrefab = smokerPrefab;
+                    enemyPrefab = smokerPrefab[prefabIndex];
                     break;
                 case 2:
-                    enemyPrefab = fighterPrefab;
+                    enemyPrefab = fighterPrefab[prefabIndex];
                     break;
             }
 
@@ -128,20 +129,20 @@ public class NPCManager : MonoBehaviour
                 GameObject newEnemy;
                 if (isNextEnemySpawnFighter)
                 {
-                    enemyPrefab = fighterPrefab;
+                    enemyPrefab = fighterPrefab[prefabIndex];
                     isNextEnemySpawnFighter = false;
                 }
-                else if (enemyPrefab == fighterPrefab && i <= numberToSpawn - 1) // Check if it's a fighter and not the last enemy to spawn
+                else if (enemyPrefab == fighterPrefab[prefabIndex] && i <= numberToSpawn - 1) // Check if it's a fighter and not the last enemy to spawn
                 {
                     isNextEnemySpawnFighter = true;
                 }
                 else if (i == numberToSpawn)
                 {
-                    enemyPrefab = pickPocketPrefab; // Ensure the last enemy is a PickPocket
+                    enemyPrefab = pickPocketPrefab[prefabIndex]; // Ensure the last enemy is a PickPocket
                 }
                 newEnemy = Instantiate(enemyPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
                 maxPossibleScore += enemyPrefab.GetComponent<NPCScript>().scoreValue;
-                if (enemyPrefab == fighterPrefab) newEnemy.GetComponent<NPCScript>().targetFightPosition = fightPosition; // Tells the fighter where the previous fighter went
+                if (enemyPrefab == fighterPrefab[prefabIndex]) newEnemy.GetComponent<NPCScript>().targetFightPosition = fightPosition; // Tells the fighter where the previous fighter went
             }
         }
     }
@@ -153,7 +154,7 @@ public class NPCManager : MonoBehaviour
     {
         for (int i = 0; i < numberToSpawn; i++)
         {
-            GameObject newCivilian = Instantiate(civilianPrefab, targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
+            GameObject newCivilian = Instantiate(civilianPrefab[Random.Range(0,3)], targetPoints[Random.Range(0, targetPoints.Length)].position, Quaternion.identity);
             spawnedCivilians.Add(newCivilian);
         }
     }

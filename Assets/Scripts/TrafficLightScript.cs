@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 9 August 2026
+* Date: 10 August 2026
 * Description: Handles the switching of colliders for traffic lights.
 */
 
@@ -9,15 +9,15 @@ using UnityEngine;
 
 public class TrafficLightScript : MonoBehaviour
 {
-    // Animator animator;
+    Animator animator;
     GameObject collider1;
     GameObject collider2;
-    float timeForRedLight = 3f;
+    float timeForRedLight = 20f;
     void Start()
     {
-        // animator = GetComponent<Animator>();
-        collider1 = transform.GetChild(0).gameObject;
-        collider2 = transform.GetChild(1).gameObject;
+        animator = GetComponent<Animator>();
+        collider1 = transform.GetChild(1).gameObject;
+        collider2 = transform.GetChild(0).gameObject;
         collider2.transform.Translate(Vector3.up * 5);
         StartCoroutine(SwitchColliders());
     }
@@ -29,17 +29,17 @@ public class TrafficLightScript : MonoBehaviour
     {
         while (true) // Traffic Light animation will be 2 seconds long
         {
+            yield return new WaitForSeconds(timeForRedLight);
+            animator.SetBool("ChangeLights", true);
+            yield return new WaitForSeconds(2f);
             StartCoroutine(MoveColliderUp(collider1));
             StartCoroutine(MoveColliderDown(collider2));
-            yield return new WaitForSeconds(timeForRedLight);
-            // animator.SetBool("ChangeLights", true);
-            yield return new WaitForSeconds(2f);
 
+            yield return new WaitForSeconds(timeForRedLight);
+            animator.SetBool("ChangeLights", false);
+            yield return new WaitForSeconds(2f);
             StartCoroutine(MoveColliderUp(collider2));
             StartCoroutine(MoveColliderDown(collider1));
-            yield return new WaitForSeconds(timeForRedLight);
-            // animator.SetBool("ChangeLights", false);
-            yield return new WaitForSeconds(2f);
         }
     }
     IEnumerator MoveColliderUp(GameObject collider)
