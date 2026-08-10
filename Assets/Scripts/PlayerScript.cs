@@ -1,19 +1,43 @@
 /*
 * Author: Zhi Hng
-* Date: 8 August 2026
+* Date: 10 August 2026
 * Description: Handles interactions between the player and interactable objects.
 */
 
-using UnityEngine; // Import Unity-specific classes like MonoBehaviour, GameObject, Collider, and print
+using UnityEngine;
+using UnityEngine.AI; // Import Unity-specific classes like MonoBehaviour, GameObject, Collider, and print
 
 public class PlayerScript : MonoBehaviour
 {
     [SerializeField] LayerMask interactable;
     [SerializeField] NPCManager npcManager;
     [HideInInspector] public bool isResume = true;
+    int pathwayIndex;
+    int lastArea = -1;
     void Start()
     {
         GameManager.Instance.ResetToGameState();
+        pathwayIndex = NavMesh.GetAreaFromName("Pathway");
+    }
+    void Update()
+    {
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(transform.position, out hit, 2.0f, NavMesh.AllAreas))
+        {
+            int currentMask = hit.mask; // area mask of the surface
+
+            if (currentMask != lastArea)
+            {
+                // Do whatever you need here
+                if ((currentMask & (1 << pathwayIndex)) == 0)
+                {
+                    print("Jaywalking -5 points");
+                    GameManager.Instance.AddScore(-5);
+                }
+
+                lastArea = currentMask; // update cache
+            }
+        }
     }
     void OnInteract() // Custom interaction method called when the player performs an interact action by clicking the key 'E"
     {

@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 8 August 2026
+* Date: 10 August 2026
 * Description: Handles management between scenes and player score.
 */
 
@@ -85,8 +85,8 @@ public class GameManager : MonoBehaviour
         GameObject playerCapsule = playerParent.GetComponentInChildren<PlayerScript>().gameObject;
         CharacterController characterController = playerCapsule.GetComponent<CharacterController>();
         characterController.enabled = false;
-        playerCapsule.transform.position = carObjectsToDisable[1].transform.parent.GetChild(1).transform.position;
-        playerCapsule.transform.Translate(Vector3.left * 3);
+        PlayerCarScript carScript = carObjectsToDisable[0].GetComponent<PlayerCarScript>();
+        playerCapsule.transform.position = carScript.carBodyTransform.position + -carScript.carBodyTransform.right * 3;
         characterController.enabled = true;
         playerParent.SetActive(true);
     }

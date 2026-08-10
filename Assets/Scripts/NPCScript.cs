@@ -189,7 +189,6 @@ public class NPCScript : MonoBehaviour
                 }
             }
         }
-        // Smoke Bugs Cnt smoke when reaching target location.
         else if (npcType == "Smoker")
         {
             if (hasFinishedSmoking &&
@@ -448,6 +447,8 @@ public class NPCScript : MonoBehaviour
 
             agent.isStopped = true;
             agent.enabled = false;
+            animator.SetBool("isWalking", false);
+            animator.enabled = false;
             npcRigidbody.isKinematic = false;
             npcRigidbody.useGravity = true;
             Vector3 relativeDirection = (other.transform.position - transform.position).normalized;
@@ -531,7 +532,6 @@ public class NPCScript : MonoBehaviour
 
     IEnumerator Smoke()
     {
-        print("smoke");
         agent.isStopped = true;
         yield return new WaitForSeconds(10f);
 
@@ -697,7 +697,6 @@ IEnumerator WaitForPartner()
     waiting = false;
 
     agent.isStopped = false;
-    print("leaving");
     currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
     if (walkingVariationCoroutine == null)
         walkingVariationCoroutine = StartCoroutine(AddWalkingVariation());
