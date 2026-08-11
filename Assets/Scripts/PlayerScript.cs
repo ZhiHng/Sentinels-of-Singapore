@@ -1,10 +1,9 @@
 /*
 * Author: Zhi Hng
-* Date: 10 August 2026
+* Date: 11 August 2026
 * Description: Handles interactions between the player and interactable objects.
 */
 
-using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.AI; // Import Unity-specific classes like MonoBehaviour, GameObject, Collider, and print
 
@@ -14,6 +13,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] LayerMask interactable;
     [SerializeField] NPCManager npcManager;
     [HideInInspector] public bool isResume = true;
+    [SerializeField] PlayerCarScript playerCarScript;
     int pathwayIndex;
     int lastArea = -1;
     public bool isChasing = false;
@@ -25,7 +25,7 @@ public class PlayerScript : MonoBehaviour
         GameManager.Instance.ResetToGameState();
         pathwayIndex = NavMesh.GetAreaFromName("Pathway");
         audioSource = GetComponent<AudioSource>();
-        audioSource.volume = 0.1f;
+        audioSource.volume = 0.05f;
     }
     void Update()
     {
@@ -70,6 +70,8 @@ public class PlayerScript : MonoBehaviour
                 if (script.hasCommitedCrime)
                 {
                     GameManager.Instance.AddScore(script.scoreValue);
+                    GameManager.Instance.CheckTracking(script.gameObject);
+                    NPCManager.offenders.Remove(script.gameObject);
                     Destroy(hit.collider.gameObject);
                 }
                 else
@@ -77,7 +79,7 @@ public class PlayerScript : MonoBehaviour
                     GameManager.Instance.AddScore(-10); // Lose score if NPC did not commit a crime.
                 }
             }
-            if (hit.collider.gameObject.CompareTag("Player Car"))
+            if (hit.collider.gameObject.CompareTag("Player Car") && !playerCarScript.isCarDestroyed)
             {
                 GameManager.Instance.HidePlayer();
             }
@@ -135,6 +137,15 @@ public class PlayerScript : MonoBehaviour
         {
             isRunRedLight = false;
         }
+    }
+
+    void On_1()
+    {
+        GameManager.Instance.Clicked1();
+    }
+    void On_2()
+    {
+        GameManager.Instance.Clicked2();
     }
 }
 

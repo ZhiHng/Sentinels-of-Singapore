@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 10 August 2026
+* Date: 11 August 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -10,6 +10,7 @@ using UnityEngine.AI;
 
 public class NPCScript : MonoBehaviour
 {
+    ParticleSystem particleSystem;
     [SerializeField] AudioClip[] shoutAudio = new AudioClip[2];
     AudioSource audioSource;
     Animator animator;
@@ -33,6 +34,7 @@ public class NPCScript : MonoBehaviour
     bool isRunning;
     bool isTired = false;
     float distanceBeforeStopRunning = 15;
+    [HideInInspector] public BeaconScript isTrackedScript;
     //PickPocket Variables
     GameObject targetCivilian;
 
@@ -46,6 +48,7 @@ public class NPCScript : MonoBehaviour
     Coroutine smokingCoroutine;
     Coroutine lookAroundCoroutine;
     Coroutine patienceCoroutine;
+    [SerializeField] GameObject vape;
 
     // Fighter Variables
     [HideInInspector] public Vector3 targetFightPosition;
@@ -73,6 +76,7 @@ public class NPCScript : MonoBehaviour
 
     void Start()
     {
+        particleSystem = GetComponentInChildren<ParticleSystem>();
         animator = GetComponent<Animator>();
         npcRigidbody = GetComponent<Rigidbody>();
         player = GameObject.FindGameObjectWithTag("Player");
@@ -126,10 +130,19 @@ public class NPCScript : MonoBehaviour
     {
         if (!agent.isStopped != animator.GetBool("isWalking"))
         {
+            if (agent.isStopped) particleSystem.Stop();
             animator.SetBool("isWalking", !agent.isStopped);
         }
         if (animator.GetBool("isRunning") != agent.speed >= 5) // Only changes when speed goes over or below threshold.
         {
+            if (agent.speed >= 5) 
+            {
+                particleSystem.Play();
+            }
+            else
+            {
+                particleSystem.Stop();
+            }
             animator.SetBool("isRunning", agent.speed >= 5);
         }
         if (npcType == "Civilian")
@@ -188,6 +201,7 @@ public class NPCScript : MonoBehaviour
                 if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
                 {
                     if (hasCommitedCrime) NPCManager.offenders.Remove(gameObject);
+                    if (isTrackedScript != null) isTrackedScript.Despawn();
                     Destroy(gameObject);
                 }
             }
@@ -198,7 +212,8 @@ public class NPCScript : MonoBehaviour
                 !agent.pathPending &&
                 agent.remainingDistance <= agent.stoppingDistance)
             {
-                NPCManager.offenders.Remove(gameObject);
+                if (hasCommitedCrime) NPCManager.offenders.Remove(gameObject);
+                if (isTrackedScript != null) isTrackedScript.Despawn();
                 Destroy(gameObject);
             }
             // Reached smoking location
@@ -580,6 +595,7 @@ public class NPCScript : MonoBehaviour
         if (isSmoking) return;
 
         isSmoking = true;
+        vape.SetActive(true);
 
         // npcRenderer.material = crimeMat;
         NPCManager.offenders.Add(gameObject);
@@ -592,6 +608,7 @@ public class NPCScript : MonoBehaviour
     void StopSmoking()
     {
         isSmoking = false;
+        vape.SetActive(false);
 
         if (lookAroundCoroutine != null)
             StopCoroutine(lookAroundCoroutine);
@@ -599,154 +616,165 @@ public class NPCScript : MonoBehaviour
         smokingCoroutine = null;
     }
 
-/// <summary>
-/// Called when a fighter reaches the fight location.
-/// </summary>
-void ReachFightPosition()
-{
-    waiting = true;
-    hasWaited = true;
-
-    agent.isStopped = true;
-
-    StopCoroutine(walkingVariationCoroutine);
-    walkingVariationCoroutine = null;
-    
-    waitCoroutine = StartCoroutine(WaitForPartner());
-}
-
-/// <summary>
-/// Starts the fight between the two fighters.
-/// </summary>
-public void StartFight(NPCScript other)
-{
-    fighting = true;
-    waiting = false;
-
-    partner = other;
-
-    other.partner = this;
-    other.fighting = true;
-    other.waiting = false;
-
-    agent.isStopped = true;
-    other.agent.isStopped = true;
-
-    // npcRenderer.material = crimeMat;
-    // other.npcRenderer.material = crimeMat;
-
-    if (waitCoroutine != null)
-        StopCoroutine(waitCoroutine);
-
-    if (other.waitCoroutine != null)
-        StopCoroutine(other.waitCoroutine);
-
-    if (walkingVariationCoroutine != null)
+    /// <summary>
+    /// Called when a fighter reaches the fight location.
+    /// </summary>
+    void ReachFightPosition()
     {
+        waiting = true;
+        hasWaited = true;
+
+        agent.isStopped = true;
+
         StopCoroutine(walkingVariationCoroutine);
         walkingVariationCoroutine = null;
+        
+        waitCoroutine = StartCoroutine(WaitForPartner());
     }
 
-    if (other.walkingVariationCoroutine != null)
+    /// <summary>
+    /// Starts the fight between the two fighters.
+    /// </summary>
+    public void StartFight(NPCScript other)
     {
-        StopCoroutine(other.walkingVariationCoroutine);
-        other.walkingVariationCoroutine = null;
+        fighting = true;
+        waiting = false;
+
+        partner = other;
+
+        other.partner = this;
+        other.fighting = true;
+        other.waiting = false;
+
+        agent.isStopped = true;
+        other.agent.isStopped = true;
+
+        // npcRenderer.material = crimeMat;
+        // other.npcRenderer.material = crimeMat;
+
+        DisableChildren(gameObject);
+        DisableChildren(other.gameObject);
+
+        if (waitCoroutine != null)
+            StopCoroutine(waitCoroutine);
+
+        if (other.waitCoroutine != null)
+            StopCoroutine(other.waitCoroutine);
+
+        if (walkingVariationCoroutine != null)
+        {
+            StopCoroutine(walkingVariationCoroutine);
+            walkingVariationCoroutine = null;
+        }
+
+        if (other.walkingVariationCoroutine != null)
+        {
+            StopCoroutine(other.walkingVariationCoroutine);
+            other.walkingVariationCoroutine = null;
+        }
+
+        leader = GetInstanceID() < other.GetInstanceID();
+
+        other.leader = !leader;
+
+        agent.isStopped = true;
+        other.agent.isStopped = true;
+
+        if (leader)
+        {
+            NPCManager.offenders.Add(gameObject);
+            SpawnFightCloud();
+
+            severityCoroutine = StartCoroutine(IncreaseSeverity());
+
+            fightCoroutine = StartCoroutine(FightTimeout());
+        }
     }
 
-    leader = GetInstanceID() < other.GetInstanceID();
-
-    other.leader = !leader;
-
-    agent.isStopped = true;
-    other.agent.isStopped = true;
-
-    if (leader)
+    void DisableChildren(GameObject parent)
     {
-        NPCManager.offenders.Add(gameObject);
-        SpawnFightCloud();
-
-        severityCoroutine = StartCoroutine(IncreaseSeverity());
-
-        fightCoroutine = StartCoroutine(FightTimeout());
+        foreach (Transform child in parent.transform)
+        {
+            child.gameObject.SetActive(false);
+        }
     }
-}
 
-/// <summary>
-/// Creates the cloud VFX between both fighters.
-/// </summary>
-void SpawnFightCloud()
-{
-    Vector3 pos = (transform.position + partner.transform.position) * 0.5f;
-
-    fightCloud = Instantiate(fightCloudPrefab, pos, Quaternion.identity);
-    audioSource.Play();
-    fightCloud.GetComponent<FightCloud>()
-              .Initialise(this);
-}
-
-/// <summary>
-/// Ends the fight and destroys both fighters.
-/// </summary>
-public void ResolveFight(bool playerStoppedFight)
-{
-    if (fightResolved)
-        return;
-
-    fightResolved = true;
-    if (playerStoppedFight)
+    /// <summary>
+    /// Creates the cloud VFX between both fighters.
+    /// </summary>
+    void SpawnFightCloud()
     {
-        int score =
-            Mathf.Max(
-                minimumFightScore,
-                scoreValue - severity * scoreLostPerSeverity);
+        Vector3 pos = (transform.position + partner.transform.position) * 0.5f;
 
-        GameManager.Instance.AddScore(score);
+        fightCloud = Instantiate(fightCloudPrefab, pos, Quaternion.identity);
+        audioSource.Play();
+        fightCloud.GetComponent<FightCloud>()
+                .Initialise(this);
     }
-    if (severityCoroutine != null)
-    StopCoroutine(severityCoroutine);
 
-    if (fightCoroutine != null)
-        StopCoroutine(fightCoroutine);
-
-    if (fightCloud != null)
-        Destroy(fightCloud);
-
-    if (partner != null)
-        Destroy(partner.gameObject);
-
-    NPCManager.offenders.Remove(gameObject);
-    Destroy(gameObject);
-}
-
-IEnumerator WaitForPartner()
-{
-    yield return new WaitForSeconds(waitForPartnerTime);
-
-    if (fighting)
-        yield break;
-
-    waiting = false;
-
-    agent.isStopped = false;
-    currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
-    if (walkingVariationCoroutine == null)
-        walkingVariationCoroutine = StartCoroutine(AddWalkingVariation());
-    MoveToTargetPosition();
-}
-IEnumerator IncreaseSeverity()
-{
-    severity = 0;
-
-    while (true)
+    /// <summary>
+    /// Ends the fight and destroys both fighters.
+    /// </summary>
+    public void ResolveFight(bool playerStoppedFight)
     {
-        yield return new WaitForSeconds(1);
+        if (fightResolved)
+            return;
 
-        severity++;
+        fightResolved = true;
+        if (playerStoppedFight)
+        {
+            int score =
+                Mathf.Max(
+                    minimumFightScore,
+                    scoreValue - severity * scoreLostPerSeverity);
+
+            GameManager.Instance.AddScore(score);
+        }
+        if (severityCoroutine != null)
+        StopCoroutine(severityCoroutine);
+
+        if (fightCoroutine != null)
+            StopCoroutine(fightCoroutine);
+
+        if (fightCloud != null)
+            Destroy(fightCloud);
+
+        if (partner != null)
+            Destroy(partner.gameObject);
+
+        NPCManager.offenders.Remove(gameObject);
+        Destroy(gameObject);
     }
-}
-IEnumerator FightTimeout()
-{
-    yield return new WaitForSeconds(fightDuration);
-    ResolveFight(false);
-}
+
+    IEnumerator WaitForPartner()
+    {
+        yield return new WaitForSeconds(waitForPartnerTime);
+
+        if (fighting)
+            yield break;
+
+        waiting = false;
+
+        agent.isStopped = false;
+        currentTargetPosition = NPCManager.targetPoints[Random.Range(0, NPCManager.targetPoints.Length)].position;
+        if (walkingVariationCoroutine == null)
+            walkingVariationCoroutine = StartCoroutine(AddWalkingVariation());
+        MoveToTargetPosition();
+    }
+    IEnumerator IncreaseSeverity()
+    {
+        severity = 0;
+
+        while (true)
+        {
+            yield return new WaitForSeconds(1);
+
+            severity++;
+        }
+    }
+    IEnumerator FightTimeout()
+    {
+        yield return new WaitForSeconds(fightDuration);
+        ResolveFight(false);
+    }
 }

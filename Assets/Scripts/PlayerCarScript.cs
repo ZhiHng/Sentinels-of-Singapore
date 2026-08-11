@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 10 August 2026
+* Date: 11 August 2026
 * Description: Calls the GameManager to change controller between player and car.
 */
 
@@ -11,14 +11,19 @@ using UnityEngine.AI;
 public class PlayerCarScript : MonoBehaviour
 {
     [SerializeField] EzerealCarController carLogic;
-    [HideInInspector] public Transform carBodyTransform;
+    EzerealSoundController carSoundLogic;
+    [SerializeField] GameObject burningVFX;
+    public Transform carBodyTransform;
     NavMeshObstacle carBodyNavObstacle;
     int walkableIndex;
     int lastArea = -1;
+    [HideInInspector] public bool isResume = true;
+    public bool isCarDestroyed = false;
     void Start()
     {
         walkableIndex = NavMesh.GetAreaFromName("Walkable");
         carBodyNavObstacle = GameObject.FindGameObjectWithTag("Player Car").GetComponent<NavMeshObstacle>();
+        carSoundLogic = gameObject.GetComponent<EzerealSoundController>();
     }
     void OnTab()
     {
@@ -60,5 +65,41 @@ public class PlayerCarScript : MonoBehaviour
     void OnEsc()
     {
         GameManager.Instance.EscPressed();
+    }
+    void On_1()
+    {
+        GameManager.Instance.Clicked1();
+    }
+    void On_2()
+    {
+        GameManager.Instance.Clicked2();
+    }
+    void OnWASD()
+    {
+        if (GameManager.Instance.isPauseMenu)
+        {
+            isResume = !isResume;
+            GameManager.Instance.ChangePauseMenuScroll(isResume);
+        }
+    }
+    void OnEnter()
+    {
+        if (GameManager.Instance.isPauseMenu)
+        {
+            if (isResume)
+            {
+                GameManager.Instance.EscPressed();
+            }
+            else
+            {
+                GameManager.Instance.ResetToMainMenu(-1);
+            }
+        }
+    }
+    public void DestroyCar()
+    {
+        isCarDestroyed = true;
+        burningVFX.SetActive(true);
+        GameManager.Instance.HidePlayerCar();
     }
 }

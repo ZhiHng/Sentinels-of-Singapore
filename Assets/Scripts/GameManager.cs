@@ -1,14 +1,14 @@
 /*
 * Author: Zhi Hng
-* Date: 10 August 2026
+* Date: 11 August 2026
 * Description: Handles management between scenes and player score.
 */
 
 using System.Collections;
+using Ezereal;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
@@ -33,8 +33,15 @@ public class GameManager : MonoBehaviour
     public bool isEndScreen = false;
     string grade = "";
     [HideInInspector] public bool isPauseMenu = false;
+    [SerializeField] GameObject walkieTalkie;
+    Coroutine stationCallCoroutine;
+    [SerializeField] float stationCallInterval;
+    bool isStationCallAccept = false;
+    bool isStationCallReact = false;
 
     public float typingSpeed = 0.05f; // Delay between each character
+    [SerializeField] GameObject beaconPrefab;
+    GameObject trackingObject;
     void Awake()
     {
         if (Instance == null)
@@ -52,6 +59,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
+        walkieTalkie.SetActive(false);
     }
 
     public void AddScore(int scoreToAdd)
@@ -62,7 +70,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            currentScore += scoreToAdd * MainMenuManager.difficulty;
+            currentScore += scoreToAdd * (MainMenuManager.difficulty + 1);
         }
         
         currentScore = Mathf.Max(0, currentScore);
@@ -80,6 +88,8 @@ public class GameManager : MonoBehaviour
         {
             objects.SetActive(true);
         }
+        PlayerCarScript carScript = carObjectsToDisable[0].GetComponent<PlayerCarScript>();
+        carScript.gameObject.GetComponent<EzerealSoundController>().TurnOnEngineSound();
         playerParent.SetActive(false);
     }
 
@@ -94,6 +104,7 @@ public class GameManager : MonoBehaviour
         CharacterController characterController = playerCapsule.GetComponent<CharacterController>();
         characterController.enabled = false;
         PlayerCarScript carScript = carObjectsToDisable[0].GetComponent<PlayerCarScript>();
+        carScript.gameObject.GetComponent<EzerealSoundController>().TurnOffEngineSound();
         playerCapsule.transform.position = carScript.carBodyTransform.position + -carScript.carBodyTransform.right * 3;
         characterController.enabled = true;
         playerParent.SetActive(true);
@@ -185,6 +196,7 @@ public class GameManager : MonoBehaviour
     }
     public void EndGame(int maxPossibleScore)
     {
+        walkieTalkie.SetActive(false);
         if (!playerParent.activeSelf)
         {
             HidePlayerCar();
@@ -194,6 +206,15 @@ public class GameManager : MonoBehaviour
     }
     public void ResetToMainMenu(int level) // -1 level if return by pause menu
     {
+        
+        if (stationCallCoroutine != null)
+        {
+            StopCoroutine(stationCallCoroutine);
+            stationCallCoroutine = null;
+        }
+        isStationCallAccept = false;
+        isStationCallReact = false;
+        walkieTalkie.SetActive(false);
         if (level != -1)
         {
             NPCManager.spawnedCivilians.Clear();
@@ -237,6 +258,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1;
         currentScore = 0;
         scoreText.text = "Score: " + currentScore;
+        stationCallCoroutine = StartCoroutine(StationCall());
     }
     public void EscPressed()
     {
@@ -250,6 +272,7 @@ public class GameManager : MonoBehaviour
             pauseScreen.SetActive(true);
             isPauseMenu = true;
             playerParent.GetComponentInChildren<PlayerScript>().isResume = true;
+            carObjectsToDisable[0].GetComponent<PlayerCarScript>().isResume = true;
             animator.SetBool("isResume", true);
         }
         else
@@ -262,5 +285,55 @@ public class GameManager : MonoBehaviour
     public void ChangePauseMenuScroll(bool isResume)
     {
         animator.SetBool("isResume", isResume);
+    }
+    IEnumerator StationCall()
+    {
+        while (true)
+        {
+            isStationCallAccept = false;
+            isStationCallReact = false;
+            yield return new WaitForSeconds(Random.Range(stationCallInterval - 2, stationCallInterval + 2));
+            yield return new WaitUntil(() => NPCManager.offenders.Count > 0);
+            walkieTalkie.SetActive(true);
+            animator.SetBool("isStationCall", true);
+            yield return new WaitUntil(() => isStationCallReact == true);
+            
+            if (isStationCallAccept == true && NPCManager.offenders.Count > 0)
+            {
+                SpawnBeaconOnGameObject(NPCManager.offenders[Random.Range(0, NPCManager.offenders.Count)]);
+            }
+            animator.SetBool("isStationCall", false);
+            yield return new WaitForSeconds(2);
+            walkieTalkie.SetActive(false);
+            yield return new WaitUntil(() => trackingObject == null);
+        }
+    }
+
+    public void Clicked1()
+    {
+        isStationCallAccept = true;
+        isStationCallReact = true;
+    }
+
+    public void Clicked2()
+    {
+        isStationCallReact = true;
+        isStationCallAccept = false;
+    }
+
+    void SpawnBeaconOnGameObject(GameObject gameObject)
+    {
+        GameObject spawnBeacon = Instantiate(beaconPrefab, gameObject.transform.position, Quaternion.identity);
+        spawnBeacon.GetComponent<BeaconScript>().LinkToGameObject(gameObject);
+        trackingObject = gameObject;
+    }
+
+    public void CheckTracking(GameObject gameObject)
+    {
+        if (gameObject == trackingObject)
+        {
+            AddScore(10);
+            print("add score");
+        }
     }
 }
