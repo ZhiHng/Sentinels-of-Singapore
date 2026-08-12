@@ -39884,7 +39884,11 @@ MonoBehaviour:
   m_text: "Car physics & controller - Ezereal\nTrees - forst\nSkybox - rpgwhitelock\nStreet
     lights - 255 pixel studios\nPlayground - ArtStudios3d\nTerrain textures - ALP\nCharacter
     models - Polygon Blacksmith\nCeiling lights - PolyKebap \nFirst person character
-    controller - Unity Technologies\n"
+    controller - Unity Technologies\nWalkie Talkie - nikiteev\nWalkie Talkie Text
+    Bubble - Vjom\nAsian Koel Sound - Pimnapat\nChasing Music - RichHeard\nBackground
+    Music - kevp888\nGirl Scream - arjanvanhoorn0181\nMan Scream - klankbeeld\nPeople
+    fighting - craigsmith\nCar engine - Cmart94\nWalkie Talkie sound - MiscPractice\nHandcuff
+    sound - harrypeeks"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
