@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 11 August 2026
+* Date: 12 August 2026
 * Description: Calls the GameManager to change controller between player and car.
 */
 
@@ -54,6 +54,7 @@ public class PlayerCarScript : MonoBehaviour
                 if ((currentMask & (1 << walkableIndex)) == 0)
                 {
                     print("Driving off road -5 points");
+                    GameManager.Instance.BroadcastMessage("",6);
                     GameManager.Instance.AddScore(-5);
                 }
 

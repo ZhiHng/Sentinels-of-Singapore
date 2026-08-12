@@ -11,13 +11,15 @@ GameObject:
   - component: {fileID: 3916714467797972621}
   - component: {fileID: 5610985600528882259}
   - component: {fileID: 457224425692279337}
-  - component: {fileID: 7505937469898781832}
+  - component: {fileID: 1224603778104586737}
+  - component: {fileID: 8118306631717223798}
+  - component: {fileID: 7297095882688921380}
   m_Layer: 0
   m_Name: Hull
-  m_TagString: Untagged
+  m_TagString: Infrastructure
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &3916714467797972621
 Transform:
@@ -91,8 +93,35 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &7505937469898781832
-MeshCollider:
+--- !u!54 &1224603778104586737
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 362651280813923793}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!65 &8118306631717223798
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -109,10 +138,30 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -6989282167128152099, guid: d7a0bfd894aa357429230dda655fe427, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 173.9573, y: 69.36577, z: 337.88123}
+  m_Center: {x: 3.7429733, y: -9.926817, z: 3.2135348}
+--- !u!65 &7297095882688921380
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 362651280813923793}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 173.9573, y: 69.93054, z: 187.51012}
+  m_Center: {x: 3.7429733, y: 58.824894, z: -0.519877}
 --- !u!1 &1304025884104140977
 GameObject:
   m_ObjectHideFlags: 0
@@ -127,7 +176,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &6084960687069465011
 Transform:
@@ -159,13 +208,12 @@ GameObject:
   - component: {fileID: 5667979535923943946}
   - component: {fileID: 1256145835606333946}
   - component: {fileID: 7381324337534583789}
-  - component: {fileID: 7094316898338647836}
   m_Layer: 0
   m_Name: wheel_RB
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &5667979535923943946
 Transform:
@@ -239,28 +287,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &7094316898338647836
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1982516618420667962}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 544936003864253652, guid: d7a0bfd894aa357429230dda655fe427, type: 3}
 --- !u!1 &2461700945681032948
 GameObject:
   m_ObjectHideFlags: 0
@@ -272,13 +298,12 @@ GameObject:
   - component: {fileID: 7504194482189299016}
   - component: {fileID: 805995050373797805}
   - component: {fileID: 1632072743120390834}
-  - component: {fileID: 3843686534954930225}
   m_Layer: 0
   m_Name: wheel_RF
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &7504194482189299016
 Transform:
@@ -352,28 +377,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &3843686534954930225
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2461700945681032948}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -1086360093238329923, guid: d7a0bfd894aa357429230dda655fe427, type: 3}
 --- !u!1 &3753579664636212802
 GameObject:
   m_ObjectHideFlags: 0
@@ -385,13 +388,12 @@ GameObject:
   - component: {fileID: 1589741585194337647}
   - component: {fileID: 689623139463469185}
   - component: {fileID: 1861869679911438707}
-  - component: {fileID: 6953118513673680108}
   m_Layer: 0
   m_Name: wheel_LB
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1589741585194337647
 Transform:
@@ -465,28 +467,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &6953118513673680108
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3753579664636212802}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -2567414643592183190, guid: d7a0bfd894aa357429230dda655fe427, type: 3}
 --- !u!1 &6642415283315047949
 GameObject:
   m_ObjectHideFlags: 0
@@ -501,7 +481,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &3928354345128690643
 Transform:
@@ -511,7 +491,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6642415283315047949}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 318.8181, y: 0.000019681636, z: 77.43096}
   m_LocalScale: {x: 0.013676999, y: 0.013676999, z: 0.013676999}
   m_ConstrainProportionsScale: 0
@@ -531,13 +511,12 @@ GameObject:
   - component: {fileID: 4480492673244707365}
   - component: {fileID: 7181330024167573868}
   - component: {fileID: 64550365174655644}
-  - component: {fileID: 4104046592404614842}
   m_Layer: 0
   m_Name: wheel_LF
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &4480492673244707365
 Transform:
@@ -611,25 +590,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &4104046592404614842
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6649582481412714594}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 9090910553122644273, guid: d7a0bfd894aa357429230dda655fe427, type: 3}

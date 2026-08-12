@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 11 August 2026
+* Date: 12 August 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -130,7 +130,10 @@ public class NPCScript : MonoBehaviour
     {
         if (!agent.isStopped != animator.GetBool("isWalking"))
         {
-            if (agent.isStopped) particleSystem.Stop();
+            if (agent.isStopped) 
+            {
+                particleSystem.Stop();
+            }
             animator.SetBool("isWalking", !agent.isStopped);
         }
         if (animator.GetBool("isRunning") != agent.speed >= 5) // Only changes when speed goes over or below threshold.
@@ -490,6 +493,7 @@ public class NPCScript : MonoBehaviour
             if (timerBeforeDestroyCoroutine == null) 
             {
                 GameManager.Instance.AddScore(-20);
+                GameManager.Instance.BroadcastMessage("",4);
                 timerBeforeDestroyCoroutine = StartCoroutine(TimerBeforeDestroy(5));
             }
         }

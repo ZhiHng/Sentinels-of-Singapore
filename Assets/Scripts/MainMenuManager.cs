@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 10 August 2026
+* Date: 12 August 2026
 * Description: Manages the main menu scene and calls level scenes for gameplay.
 */
 
@@ -12,6 +12,7 @@ public class MainMenuManager : MonoBehaviour
 {
     Animator animator;
     [SerializeField] GameObject screenDarken;
+    [SerializeField] GameObject leftSideDarken;
     [SerializeField] GameObject mainMenu;
     [SerializeField] GameObject settingsMenu;
     [SerializeField] GameObject howToPlayMenu;
@@ -33,6 +34,7 @@ public class MainMenuManager : MonoBehaviour
     public int markerTarget = 0;
     public int menuPage = 0; // 0 = main menu, 1 = settings, 2 = how to play, 3 = credits, 4 = level select
     public int howToPlayPage = 0; // 0 = page 1, 1 = page 2, 2 = page 3
+    [SerializeField] TextMeshProUGUI[] levelGradeText = new TextMeshProUGUI[3];
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -134,6 +136,14 @@ public class MainMenuManager : MonoBehaviour
                         OpenMenu(levelMenu);
                         menuPage = 4;
                         markerTarget = 0;
+                        for (int i = 0; i < levelMenu.transform.childCount - 1; i++)
+                        {
+                            if (GameManager.Instance != null)
+                            {
+                                levelGradeText[i].text = "Score: " + GameManager.Instance.levelScores[i] + "\nGrade: " + GameManager.Instance.levelGrades[i];
+                            }
+                        }
+                        
                         break;
                     case 1: // Settings
                         OpenMenu(settingsMenu);
@@ -338,10 +348,12 @@ public class MainMenuManager : MonoBehaviour
         if (menuToOpen == mainMenu)
         {
             screenDarken.SetActive(false);
+            leftSideDarken.SetActive(true);
         }
         else
         {
             screenDarken.SetActive(true);
+            leftSideDarken.SetActive(false);
         }
         animator.SetInteger("markerNumber", markerTarget);
         animator.SetInteger("menuNumber", menuPage);

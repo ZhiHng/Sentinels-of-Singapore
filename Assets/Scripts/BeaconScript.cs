@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 11 August 2026
+* Date: 12 August 2026
 * Description: Handles the marking of NPCs
 */
 
@@ -14,10 +14,12 @@ public class BeaconScript : MonoBehaviour
     {
         objectToLink = gameObject;
         gameObject.GetComponent<NPCScript>().isTrackedScript = this;
+        GameManager.Instance.BroadcastMessage("Suspect has been identified");
     }
     public void Despawn()
     {
         print("escaped");
+        GameManager.Instance.BroadcastMessage("Suspect has escaped");
         GameManager.Instance.AddScore(-10);
     }
     void Update()

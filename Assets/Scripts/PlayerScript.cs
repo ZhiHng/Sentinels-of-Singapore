@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 11 August 2026
+* Date: 12 August 2026
 * Description: Handles interactions between the player and interactable objects.
 */
 
@@ -54,6 +54,7 @@ public class PlayerScript : MonoBehaviour
                 if ((currentMask & (1 << pathwayIndex)) == 0 && !isChasing)
                 {
                     print("Jaywalking -5 points");
+                    GameManager.Instance.BroadcastMessage("",5);
                     GameManager.Instance.AddScore(-5);
                 }
 
@@ -72,10 +73,13 @@ public class PlayerScript : MonoBehaviour
                     GameManager.Instance.AddScore(script.scoreValue);
                     GameManager.Instance.CheckTracking(script.gameObject);
                     NPCManager.offenders.Remove(script.gameObject);
+                    if (script.npcType == "Pickpocket") GameManager.Instance.BroadcastMessage("",0);
+                    if (script.npcType == "Smoker") GameManager.Instance.BroadcastMessage("",1);
                     Destroy(hit.collider.gameObject);
                 }
                 else
                 {
+                    GameManager.Instance.BroadcastMessage("This civilian is innocent!");
                     GameManager.Instance.AddScore(-10); // Lose score if NPC did not commit a crime.
                 }
             }
@@ -85,6 +89,7 @@ public class PlayerScript : MonoBehaviour
             }
             if (hit.collider.gameObject.CompareTag("Fight Cloud"))
             {
+                GameManager.Instance.BroadcastMessage("",2);
                 hit.collider.gameObject.GetComponent<FightCloud>().Interacted();
             }
         }
@@ -128,6 +133,7 @@ public class PlayerScript : MonoBehaviour
             isRunRedLight = true;
             GameManager.Instance.AddScore(-5);
             print("Player run red light, -5 score");
+            GameManager.Instance.BroadcastMessage("",5);
         }
     }
 

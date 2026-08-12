@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 11 August 2026
+* Date: 12 August 2026
 * Description: Detects if the car crashes into infrastructure.
 */
 
@@ -15,7 +15,8 @@ public class PlayerCarCrashingDetect : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Infrastructure"))
         {
-            print("crashed");
+            GameManager.Instance.AddScore(-10);
+            GameManager.Instance.BroadcastMessage("",3);
             crashCount--;
             if (crashCount == 0)
             {

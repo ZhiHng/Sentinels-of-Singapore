@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 10 August 2026
+* Date: 12 August 2026
 * Description: Spawns NPCs.
 */
 
@@ -10,6 +10,7 @@ using System.Collections;
 
 public class NPCManager : MonoBehaviour
 {
+    [SerializeField] GameObject[] levelObjects = new GameObject[3];
     [SerializeField] GameObject directionalLight;
     float degreeToTurnLight;
     [HideInInspector] public static Transform[] targetPoints;
@@ -50,6 +51,21 @@ public class NPCManager : MonoBehaviour
             graphicQuality = MainMenuManager.graphicQuality;
             difficulty = MainMenuManager.difficulty;
         }
+        if (level >= 2)
+        {
+            levelObjects[0].SetActive(true);
+            levelObjects[1].SetActive(true);
+            levelObjects[2].SetActive(true);
+        } 
+        else if (level >= 1)
+        {
+            levelObjects[0].SetActive(true);
+            levelObjects[1].SetActive(true);
+        }
+        else
+        {
+            levelObjects[0].SetActive(true);
+        }
 
         directionalLight.transform.rotation = Quaternion.Euler(50f, 0, 0);
         degreeToTurnLight = (180 - 50) / (8 * 60) / 8 * playTime; // (start degree - end degree) / (minutes in seconds) * scaled to playTime duration
@@ -71,7 +87,7 @@ public class NPCManager : MonoBehaviour
 
         enemiesToSpawnEachRound = numberOfEnemies / playTime;
         int remainderEnemies = numberOfEnemies % playTime;
-        spawnEnemyCoroutine = StartCoroutine(SpawnEnemiesOverTime(enemiesToSpawnEachRound + remainderEnemies, 3f)); // Spawn the remainder of the enemies in the first round
+        spawnEnemyCoroutine = StartCoroutine(SpawnEnemiesOverTime(enemiesToSpawnEachRound + remainderEnemies, 5f)); // Spawn the remainder of the enemies in the first round
         StartCoroutine(SpawnCiviliansOverTime(civiliansSpawnInterval)); // Spawn civilians over time
     }
     void Update()

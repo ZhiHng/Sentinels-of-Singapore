@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 10 August 2026
+* Date: 12 August 2026
 * Description: Detect if the Player Car has run a red traffic light.
 */
 
@@ -14,6 +14,7 @@ public class PlayerCarTrafficLightDetect : MonoBehaviour
         {
             GameManager.Instance.AddScore(-5);
             print("Player Car hit a traffic light! Score decreased by 5.");
+            GameManager.Instance.BroadcastMessage("",7);
         }
     }
 }

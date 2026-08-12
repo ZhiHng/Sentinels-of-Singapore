@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 11 August 2026
+* Date: 12 August 2026
 * Description: Handles management between scenes and player score.
 */
 
@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     int currentScore;
     GameObject playerParent;
     [SerializeField] TextMeshProUGUI scoreText; // Reference to the UI text element that displays the player's score
+    [SerializeField] TextMeshProUGUI informationUI;
     GameObject[] carObjectsToDisable = new GameObject[3];
     [SerializeField] GameObject endScreenUI;
     [SerializeField] GameObject crosshair;
@@ -34,7 +35,9 @@ public class GameManager : MonoBehaviour
     string grade = "";
     [HideInInspector] public bool isPauseMenu = false;
     [SerializeField] GameObject walkieTalkie;
+    AudioSource walkieTalkieAudio;
     Coroutine stationCallCoroutine;
+    Coroutine showTextCoroutine;
     [SerializeField] float stationCallInterval;
     bool isStationCallAccept = false;
     bool isStationCallReact = false;
@@ -42,6 +45,9 @@ public class GameManager : MonoBehaviour
     public float typingSpeed = 0.05f; // Delay between each character
     [SerializeField] GameObject beaconPrefab;
     GameObject trackingObject;
+    bool[] popUpsTracking = new bool[8]; // 0: Pickpocket, 1: Smoker, 2: Fighter, 3: Crashing, 4: Knocking over people, 5: Jaywalking, 6: Driving off road, 7: Red Light Driving
+    bool carFirstSpawn;
+
     void Awake()
     {
         if (Instance == null)
@@ -60,6 +66,7 @@ public class GameManager : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         walkieTalkie.SetActive(false);
+        walkieTalkieAudio = walkieTalkie.GetComponent<AudioSource>();
     }
 
     public void AddScore(int scoreToAdd)
@@ -296,11 +303,16 @@ public class GameManager : MonoBehaviour
             yield return new WaitUntil(() => NPCManager.offenders.Count > 0);
             walkieTalkie.SetActive(true);
             animator.SetBool("isStationCall", true);
+            walkieTalkieAudio.Play();
             yield return new WaitUntil(() => isStationCallReact == true);
             
             if (isStationCallAccept == true && NPCManager.offenders.Count > 0)
             {
                 SpawnBeaconOnGameObject(NPCManager.offenders[Random.Range(0, NPCManager.offenders.Count)]);
+            }
+            else if (!(NPCManager.offenders.Count > 0))
+            {
+                BroadcastMessage("Suspect has escaped while responding");
             }
             animator.SetBool("isStationCall", false);
             yield return new WaitForSeconds(2);
@@ -335,5 +347,96 @@ public class GameManager : MonoBehaviour
             AddScore(10);
             print("add score");
         }
+    }
+    public void BroadcastMessage(string message = "", int preset = -1) // 0: Pickpocket, 1: Smoker, 2: Fighter, 3: Crashing, 4: Knocking over people, 5: Jaywalking, 6: Driving off road, 7: Red Light Driving
+    {
+        string finalMessage = message;
+        if (preset >= 0)
+        {
+            if (popUpsTracking[preset] != true)
+            {
+                switch (preset)
+                {
+                    case 0:
+                        finalMessage = "Pickpockets can be sentenced up to 3 years in jail or fined or both";
+                        break;
+                    case 1:
+                        finalMessage = "Vapers can be fined up to $10,000";
+                        break;
+                    case 2:
+                        finalMessage = "Public Affray can be sentenced up to 1 years in jail or fined up to $5,000 or both";
+                        break;
+                    case 3:
+                        finalMessage = "Infrastructure damage can be fined up to $5,000 and possible jail if reckless driving";
+                        break;
+                    case 4:
+                        finalMessage = "Knocking over people can be sentenced up to 2 years in jail if only injury and up to 10 years if it is fatal, including fines";
+                        break;
+                    case 5:
+                        finalMessage = "Jaywalking can be fined up to $100";
+                        break;
+                    case 6:
+                        finalMessage = "Driving off roads onto pedestrian areas can be fined up to $5,000 and/or up to 1 year in jail";
+                        if (carFirstSpawn != true)
+                        {
+                            carFirstSpawn = true;
+                            return;
+                        }
+                        break;
+                    case 7:
+                        finalMessage = "Driving a red light can be fined up to $200";
+                        break;
+                }
+                popUpsTracking[preset] = true;
+            }
+        }
+        if (finalMessage == "") return;
+        if (showTextCoroutine != null)
+        {
+            StopCoroutine(showTextCoroutine);
+        }
+        showTextCoroutine = StartCoroutine(ShowText(5f, finalMessage));
+    }
+    /// <summary>
+    /// Enables the TextMeshProUGUI for a duration to show a message and disables it again
+    /// </summary>
+    /// <param name="duration">Duration for the message to stay on the screen</param>
+    /// <param name="message">Message to be shown</param>
+    /// <returns></returns>
+    IEnumerator ShowText(float duration, string message)
+    {
+        RectTransform background = informationUI.transform.parent as RectTransform;
+        informationUI.text = message;
+        background.anchoredPosition = new Vector2(0, 260);
+        informationUI.transform.parent.gameObject.SetActive(true); // Show the text
+        float elapsed = 0f;
+        float moveInNOutDuration = 1;
+        Vector2 pos = background.anchoredPosition;
+
+        while (elapsed < moveInNOutDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / moveInNOutDuration;
+            pos.y = Mathf.Lerp(260, 180, t);
+            background.anchoredPosition = pos;
+            yield return null;
+        }
+
+        // Ensure final position
+        pos.y = 180;
+        background.anchoredPosition = pos;
+
+        yield return new WaitForSeconds(duration);
+
+        elapsed = 0;
+        while (elapsed < moveInNOutDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / moveInNOutDuration;
+            pos.y = Mathf.Lerp(180, 260, t);
+            background.anchoredPosition = pos;
+            yield return null;
+        }
+        informationUI.transform.parent.gameObject.SetActive(false); //Hide the text
     }
 }
