@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 12 August 2026
+* Date: 13 August 2026
 * Description: Spawns NPCs.
 */
 
@@ -94,10 +94,16 @@ public class NPCManager : MonoBehaviour
     {
         
         directionalLight.transform.Rotate(degreeToTurnLight * Time.deltaTime, 0, 0);
+        int previousSecond = Mathf.FloorToInt(timer);
         timer += Time.deltaTime;
 
         // Convert timer to whole seconds
         int seconds = Mathf.FloorToInt(timer);
+
+        if (seconds != previousSecond)
+        {
+            GameManager.Instance.UpdateTimer(playTime * 60 - seconds);
+        }
 
         // Check if it's a multiple of 60 (every minute)
         if (seconds % 60 == 0 && seconds != 0 && seconds / 60 <= playTime)

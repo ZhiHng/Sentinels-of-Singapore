@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 12 August 2026
+* Date: 13 August 2026
 * Description: Handles the AI for all the NPCs.
 */
 
@@ -367,13 +367,13 @@ public class NPCScript : MonoBehaviour
     /// <returns></returns>
     IEnumerator RunFromPlayer()
     {
-        int run = Random.Range(0,3); // Randomise chance to run when seeing player.
+        int run = Random.Range(0,4); // Randomise chance to run when seeing player.
         switch (run)
         {
-            case 0 or 1:
+            case 0 or 1 or 2:
                 isAttemptingToRun = true;
                 break;
-            case 2:
+            case 3:
                 isAttemptingToRun = false;
                 break;
         }

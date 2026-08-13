@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 12 August 2026
+* Date: 13 August 2026
 * Description: Handles management between scenes and player score.
 */
 
@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     int currentScore;
     GameObject playerParent;
     [SerializeField] TextMeshProUGUI scoreText; // Reference to the UI text element that displays the player's score
+    [SerializeField] TextMeshProUGUI timerText; 
     [SerializeField] TextMeshProUGUI informationUI;
     GameObject[] carObjectsToDisable = new GameObject[3];
     [SerializeField] GameObject endScreenUI;
@@ -54,6 +55,7 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             scoreText.text = "Score: " + 0;
+            timerText.text = "Shift Ends In...";
         }
         else
         {
@@ -204,6 +206,8 @@ public class GameManager : MonoBehaviour
     public void EndGame(int maxPossibleScore)
     {
         walkieTalkie.SetActive(false);
+        if (stationCallCoroutine != null)
+        StopCoroutine(stationCallCoroutine);
         if (!playerParent.activeSelf)
         {
             HidePlayerCar();
@@ -235,6 +239,7 @@ public class GameManager : MonoBehaviour
         currentScore = 0;
         crosshair.SetActive(false);
         scoreText.gameObject.SetActive(false);
+        timerText.gameObject.SetActive(false);
         endScreenUI.SetActive(false);
         pauseScreen.SetActive(false);
         isPauseMenu = false;
@@ -259,12 +264,14 @@ public class GameManager : MonoBehaviour
 
         crosshair.SetActive(true);
         scoreText.gameObject.SetActive(true);
+        timerText.gameObject.SetActive(true);
         endScreenUI.SetActive(false);
         pauseScreen.SetActive(false);
         isPauseMenu = false;
         Time.timeScale = 1;
         currentScore = 0;
         scoreText.text = "Score: " + currentScore;
+        timerText.text = "Shift Ends In...";
         stationCallCoroutine = StartCoroutine(StationCall());
     }
     public void EscPressed()
@@ -344,7 +351,7 @@ public class GameManager : MonoBehaviour
     {
         if (gameObject == trackingObject)
         {
-            AddScore(10);
+            AddScore(20);
             print("add score");
         }
     }
@@ -438,5 +445,9 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
         informationUI.transform.parent.gameObject.SetActive(false); //Hide the text
+    }
+    public void UpdateTimer(int timeLeft)
+    {
+        timerText.text = timeLeft.ToString();
     }
 }

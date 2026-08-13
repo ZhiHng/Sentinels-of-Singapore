@@ -1,6 +1,6 @@
 /*
 * Author: Zhi Hng
-* Date: 12 August 2026
+* Date: 13 August 2026
 * Description: Handles interactions between the player and interactable objects.
 */
 
@@ -10,6 +10,7 @@ using UnityEngine.AI; // Import Unity-specific classes like MonoBehaviour, GameO
 public class PlayerScript : MonoBehaviour
 {
     [SerializeField] AudioClip[] audioClips = new AudioClip[2];
+    [SerializeField] AudioClip handcuffSound;
     [SerializeField] LayerMask interactable;
     [SerializeField] NPCManager npcManager;
     [HideInInspector] public bool isResume = true;
@@ -70,6 +71,7 @@ public class PlayerScript : MonoBehaviour
                 NPCScript script = hit.collider.gameObject.GetComponent<NPCScript>();
                 if (script.hasCommitedCrime)
                 {
+                    AudioSource.PlayClipAtPoint(handcuffSound, script.gameObject.transform.position);
                     GameManager.Instance.AddScore(script.scoreValue);
                     GameManager.Instance.CheckTracking(script.gameObject);
                     NPCManager.offenders.Remove(script.gameObject);
@@ -89,6 +91,7 @@ public class PlayerScript : MonoBehaviour
             }
             if (hit.collider.gameObject.CompareTag("Fight Cloud"))
             {
+                AudioSource.PlayClipAtPoint(handcuffSound, hit.collider.gameObject.transform.position);
                 GameManager.Instance.BroadcastMessage("",2);
                 hit.collider.gameObject.GetComponent<FightCloud>().Interacted();
             }
