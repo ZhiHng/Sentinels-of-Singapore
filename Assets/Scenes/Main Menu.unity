@@ -7882,11 +7882,12 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'WASD to Move
+  m_text: 'WASD to Move or Select
 
     SPACE to Jump or Enter
 
-    Hold SHIFT to Sprint
+    Hold SHIFT to
+    Sprint
 
 '
   m_isRightToLeft: 0
